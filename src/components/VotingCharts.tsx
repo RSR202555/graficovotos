@@ -250,7 +250,7 @@ export default function VotingCharts({
                   <RechartsTooltip 
                     contentStyle={{ backgroundColor: '#0f172a', borderColor: '#334155', borderRadius: '8px', color: '#fff' }}
                     itemStyle={{ color: '#fff', fontWeight: 'bold' }}
-                    formatter={(value: number) => [`${value} votos`, '']}
+                    formatter={(value: any) => [`${value ?? 0} votos`, '']}
                   />
                 </PieChart>
               </ResponsiveContainer>

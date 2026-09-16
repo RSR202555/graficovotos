@@ -727,9 +727,9 @@ export default function Home() {
                     <div className="flex items-center gap-3.5 mb-2">
                       <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-emerald-500 bg-slate-800 shrink-0 shadow-md shadow-emerald-500/20">
                         <img
-                          src="/imagens/jeronimo.png"
+                          src="/imagens/jeronimo.jpg"
                           alt="Jerônimo Rodrigues"
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover object-top"
                           onError={(e) => {
                             (e.currentTarget as HTMLElement).style.display = "none";
                           }}
@@ -770,9 +770,9 @@ export default function Home() {
                     <div className="flex items-center gap-3.5 mb-2">
                       <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-blue-500 bg-slate-800 shrink-0 shadow-md shadow-blue-500/20">
                         <img
-                          src="/imagens/acm_neto.jpg"
+                          src="/imagens/acm_neto.png"
                           alt="ACM Neto"
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover object-top"
                           onError={(e) => {
                             (e.currentTarget as HTMLElement).style.display = "none";
                           }}

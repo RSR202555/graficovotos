@@ -154,11 +154,11 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
 
             {/* Candidate 1: Lula */}
             <div className="flex items-center gap-3 pt-2">
-              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-red-500/70 bg-slate-800 shrink-0 shadow-md">
+              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-red-500/70 bg-slate-800 shrink-0 shadow-md">
                 <img
                   src="/imagens/lula.jpg"
                   alt="Lula"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-top"
                   onError={(e) => {
                     (e.currentTarget as HTMLElement).style.display = "none";
                   }}
@@ -187,11 +187,11 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
 
             {/* Candidate 2: Flávio Bolsonaro / Jair Bolsonaro */}
             <div className="flex items-center gap-3 pt-2">
-              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-500/70 bg-slate-800 shrink-0 shadow-md">
+              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-500/70 bg-slate-800 shrink-0 shadow-md">
                 <img
                   src={is2026 ? "/imagens/flavio_bolsonaro.jpg" : "/imagens/bolsonaro.jpg"}
                   alt={is2026 ? "Flávio Bolsonaro" : "Jair Bolsonaro"}
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-top"
                   onError={(e) => {
                     (e.currentTarget as HTMLElement).style.display = "none";
                   }}
@@ -246,11 +246,11 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
 
             {/* Candidate 1: Jerônimo */}
             <div className="flex items-center gap-3 pt-2">
-              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-emerald-500/70 bg-slate-800 shrink-0 shadow-md">
+              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-500/70 bg-slate-800 shrink-0 shadow-md">
                 <img
-                  src="/imagens/jeronimo.png"
+                  src="/imagens/jeronimo.jpg"
                   alt="Jerônimo Rodrigues"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-top"
                   onError={(e) => {
                     (e.currentTarget as HTMLElement).style.display = "none";
                   }}
@@ -279,11 +279,11 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
 
             {/* Candidate 2: ACM Neto */}
             <div className="flex items-center gap-3 pt-2">
-              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-500/70 bg-slate-800 shrink-0 shadow-md">
+              <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-blue-500/70 bg-slate-800 shrink-0 shadow-md">
                 <img
-                  src="/imagens/acm_neto.jpg"
+                  src="/imagens/acm_neto.png"
                   alt="ACM Neto"
-                  className="w-full h-full object-cover"
+                  className="w-full h-full object-cover object-top"
                   onError={(e) => {
                     (e.currentTarget as HTMLElement).style.display = "none";
                   }}

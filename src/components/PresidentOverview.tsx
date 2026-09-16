@@ -242,7 +242,7 @@ export default function PresidentOverview({
                     <img
                       src="/imagens/lula.jpg"
                       alt="Lula"
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover object-top"
                       onError={(e) => {
                         (e.currentTarget as HTMLElement).style.display = "none";
                       }}
@@ -294,7 +294,7 @@ export default function PresidentOverview({
                     <img
                       src={is2026 ? "/imagens/flavio_bolsonaro.jpg" : "/imagens/bolsonaro.jpg"}
                       alt={is2026 ? "Flávio Bolsonaro" : "Jair Bolsonaro"}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover object-top"
                       onError={(e) => {
                         (e.currentTarget as HTMLElement).style.display = "none";
                       }}

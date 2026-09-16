@@ -14,11 +14,19 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
     BAHIA_CITIES_DATA.find((c) => c.isSatiroDias) || BAHIA_CITIES_DATA[0]
   );
 
+  const [selectedRegion, setSelectedRegion] = useState<
+    "todas" | "Sátiro Dias & Região" | "Polos Regionais"
+  >("todas");
+
   const is2026 = electionYear === "2026";
 
-  const filteredCities = BAHIA_CITIES_DATA.filter((c) =>
-    c.city.toLowerCase().includes(search.toLowerCase().trim())
-  );
+  const filteredCities = BAHIA_CITIES_DATA.filter((c) => {
+    const q = search.toLowerCase().trim();
+    const matchesSearch = !q || c.city.toLowerCase().includes(q);
+    const matchesRegion =
+      selectedRegion === "todas" || c.region === selectedRegion;
+    return matchesSearch && matchesRegion;
+  });
 
   // For 2026, the election has not happened yet: zero out votes
   const totalVotesDisplay = is2026 ? 0 : selectedCity.totalVotes;
@@ -281,56 +289,148 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
-              placeholder="Buscar cidade baiana..."
+              placeholder="Buscar entre 75 cidades da Bahia..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-800/90 border border-slate-700 rounded-xl pl-9 pr-4 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
+              className="w-full bg-slate-800/90 border border-slate-700 rounded-xl pl-9 pr-8 py-2 text-xs text-white placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50"
             />
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs px-1"
+              >
+                ✕
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Cities Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
-          {filteredCities.map((item) => {
-            const isSelected = selectedCity.city === item.city;
-            return (
-              <button
-                key={item.city}
-                onClick={() => setSelectedCity(item)}
-                className={`p-3.5 rounded-2xl text-left border transition-all flex items-center justify-between group ${
-                  isSelected
-                    ? "bg-blue-600/20 border-blue-500/60 shadow-lg shadow-blue-500/10 ring-1 ring-blue-500"
-                    : "bg-slate-950/40 border-slate-800 hover:bg-slate-800/60 hover:border-slate-700"
-                }`}
-              >
-                <div>
-                  <div className="flex items-center gap-1.5">
-                    <span
-                      className={`font-bold text-xs sm:text-sm block ${
-                        isSelected ? "text-blue-300" : "text-white"
-                      }`}
-                    >
-                      {item.city}
-                    </span>
-                    {item.isSatiroDias && (
-                      <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
-                    )}
-                  </div>
-                  <span className="text-[11px] text-slate-400 font-mono block mt-0.5">
-                    {is2026 ? "0 votos apurados" : `${item.totalVotes.toLocaleString("pt-BR")} votos`}
-                  </span>
-                </div>
-                <ChevronRight
-                  className={`w-4 h-4 transition-transform ${
-                    isSelected
-                      ? "text-blue-400 translate-x-1"
-                      : "text-slate-600 group-hover:text-slate-400"
-                  }`}
-                />
-              </button>
-            );
-          })}
+        {/* Region Filter Pills */}
+        <div className="flex items-center gap-2 mb-4 overflow-x-auto pb-1.5 scrollbar-none">
+          <button
+            onClick={() => setSelectedRegion("todas")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-95 ${
+              selectedRegion === "todas"
+                ? "bg-blue-600 text-white shadow-md shadow-blue-600/30"
+                : "bg-slate-800/80 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+            }`}
+          >
+            Todas as Cidades ({BAHIA_CITIES_DATA.length})
+          </button>
+
+          <button
+            onClick={() => setSelectedRegion("Sátiro Dias & Região")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-400 active:scale-95 ${
+              selectedRegion === "Sátiro Dias & Região"
+                ? "bg-amber-400 text-slate-950 shadow-md shadow-amber-400/30 font-black"
+                : "bg-slate-800/80 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+            }`}
+          >
+            📍 Sátiro Dias & Região (
+            {
+              BAHIA_CITIES_DATA.filter(
+                (c) => c.region === "Sátiro Dias & Região"
+              ).length
+            }
+            )
+          </button>
+
+          <button
+            onClick={() => setSelectedRegion("Polos Regionais")}
+            className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all whitespace-nowrap focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-purple-500 active:scale-95 ${
+              selectedRegion === "Polos Regionais"
+                ? "bg-purple-600 text-white shadow-md shadow-purple-600/30 font-black"
+                : "bg-slate-800/80 text-slate-400 hover:bg-slate-800 hover:text-slate-200"
+            }`}
+          >
+            🌆 Polos Regionais (
+            {
+              BAHIA_CITIES_DATA.filter((c) => c.region === "Polos Regionais")
+                .length
+            }
+            )
+          </button>
         </div>
+
+        {/* Counter Info */}
+        <div className="flex items-center justify-between text-[11px] text-slate-400 mb-3 px-1">
+          <span>
+            Exibindo <strong className="text-white font-mono tabular-nums">{filteredCities.length}</strong> cidades disponíveis
+          </span>
+          {search && (
+            <span>
+              Filtrado por: &ldquo;<strong className="text-amber-400">{search}</strong>&rdquo;
+            </span>
+          )}
+        </div>
+
+        {/* Cities Grid */}
+        {filteredCities.length === 0 ? (
+          <div className="p-8 text-center bg-slate-950/40 rounded-2xl border border-slate-800">
+            <p className="text-sm text-slate-400">
+              Nenhuma cidade encontrada com o termo &ldquo;{search}&rdquo;.
+            </p>
+            <button
+              onClick={() => {
+                setSearch("");
+                setSelectedRegion("todas");
+              }}
+              className="mt-3 px-3 py-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-white transition"
+            >
+              Limpar filtros
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3 max-h-[580px] overflow-y-auto pr-1">
+            {filteredCities.map((item) => {
+              const isSelected = selectedCity.city === item.city;
+              return (
+                <button
+                  key={item.city}
+                  onClick={() => setSelectedCity(item)}
+                  className={`p-3.5 rounded-2xl text-left border transition-all flex items-center justify-between group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 active:scale-[0.98] ${
+                    isSelected
+                      ? "bg-blue-600/20 border-blue-500/60 shadow-lg shadow-blue-500/10 ring-1 ring-blue-500"
+                      : "bg-slate-950/40 border-slate-800 hover:bg-slate-800/60 hover:border-slate-700"
+                  }`}
+                >
+                  <div className="min-w-0 pr-2">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                      <span
+                        className={`font-bold text-xs sm:text-sm block truncate ${
+                          isSelected ? "text-blue-300" : "text-white"
+                        }`}
+                      >
+                        {item.city}
+                      </span>
+                      {item.isSatiroDias ? (
+                        <span className="px-1.5 py-0.5 rounded text-[9px] font-black bg-amber-400 text-slate-950 uppercase shrink-0">
+                          Sua Localidade
+                        </span>
+                      ) : item.region === "Sátiro Dias & Região" ? (
+                        <span className="px-1.5 py-0.2 rounded text-[9px] font-medium bg-amber-500/10 text-amber-300 border border-amber-500/20 shrink-0">
+                          Região
+                        </span>
+                      ) : null}
+                    </div>
+                    <span className="text-[11px] text-slate-400 font-mono tabular-nums block mt-0.5">
+                      {is2026
+                        ? "0 votos apurados"
+                        : `${item.totalVotes.toLocaleString("pt-BR")} votos`}
+                    </span>
+                  </div>
+                  <ChevronRight
+                    className={`w-4 h-4 shrink-0 transition-transform ${
+                      isSelected
+                        ? "text-blue-400 translate-x-1"
+                        : "text-slate-600 group-hover:text-slate-400"
+                    }`}
+                  />
+                </button>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

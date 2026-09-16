@@ -1,14 +1,33 @@
 import { NextResponse } from "next/server";
-import { fetchTseData, BAHIA_CITIES_DATA } from "@/lib/tse";
+import {
+  fetchTseData,
+  BAHIA_CITIES_DATA,
+  getBrazilStatesPresidentData,
+} from "@/lib/tse";
 
 export const revalidate = 30; // ISR cache for 30 seconds
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const cargo = searchParams.get("cargo") || "all";
+  const uf = (searchParams.get("uf")?.toLowerCase() === "br" ? "br" : "ba") as "br" | "ba";
   const ano = (searchParams.get("ano") === "2022" ? "2022" : "2026") as "2026" | "2022";
 
   try {
+    if (cargo === "1" || cargo === "presidente") {
+      const data = await fetchTseData("1", ano, uf);
+      const states = getBrazilStatesPresidentData(ano);
+      return NextResponse.json({
+        success: true,
+        ano,
+        cargo: "presidente",
+        uf,
+        data,
+        states,
+        cities: BAHIA_CITIES_DATA,
+      });
+    }
+
     if (cargo === "3" || cargo === "governador") {
       const data = await fetchTseData("3", ano);
       return NextResponse.json({ success: true, ano, data, cities: BAHIA_CITIES_DATA });
@@ -24,8 +43,10 @@ export async function GET(request: Request) {
       return NextResponse.json({ success: true, ano, data, cities: BAHIA_CITIES_DATA });
     }
 
-    // Default: fetch all 3 cargos in parallel for the chosen year
-    const [govData, fedData, estData] = await Promise.all([
+    // Default: fetch all in parallel for the chosen year
+    const [presBrData, presBaData, govData, fedData, estData] = await Promise.all([
+      fetchTseData("1", ano, "br"),
+      fetchTseData("1", ano, "ba"),
       fetchTseData("3", ano),
       fetchTseData("6", ano),
       fetchTseData("7", ano),
@@ -40,13 +61,18 @@ export async function GET(request: Request) {
       (c) => c.n === "4070" || c.nm.toUpperCase().includes("VITOR BONFIM") || c.nm.toUpperCase().includes("VITOR BOMFIM")
     );
 
+    const states = getBrazilStatesPresidentData(ano);
+
     return NextResponse.json({
       success: true,
       ano,
       updatedAt: new Date().toISOString(),
+      presidenteBr: presBrData,
+      presidenteBa: presBaData,
       governador: govData,
       federal: fedData,
       estadual: estData,
+      states,
       focusCandidates: {
         robertoCarlos: robertoCarlos || {
           n: "43333",

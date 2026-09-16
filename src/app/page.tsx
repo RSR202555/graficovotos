@@ -30,12 +30,14 @@ import {
   Trophy,
   Crown,
   CheckCircle,
+  Flag,
 } from "lucide-react";
 import MunicipalityMap from "@/components/MunicipalityMap";
 import VotingCharts from "@/components/VotingCharts";
 import LocationPickerMap from "@/components/LocationPickerMap";
 import TseCandidateRanking from "@/components/TseCandidateRanking";
 import BahiaCitiesOverview from "@/components/BahiaCitiesOverview";
+import PresidentOverview from "@/components/PresidentOverview";
 
 // No mock initial data
 const INITIAL_CANDIDATES: Candidate[] = [];
@@ -67,16 +69,19 @@ export default function Home() {
   // TSE Live Data States
   const [electionYear, setElectionYear] = useState<"2026" | "2022">("2026");
   const [activeMainTab, setActiveMainTab] = useState<"bahia" | "cidades" | "satiro-dias">("bahia");
-  const [selectedCargo, setSelectedCargo] = useState<"governador" | "estadual" | "federal">("governador");
+  const [selectedCargo, setSelectedCargo] = useState<"presidente" | "governador" | "estadual" | "federal">("presidente");
   const [tseLoading, setTseLoading] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
   const [lastTseUpdate, setLastTseUpdate] = useState<string>("");
   const [tseData, setTseData] = useState<{
+    presidenteBr?: TseElectionData | null;
+    presidenteBa?: TseElectionData | null;
     governador?: TseElectionData | null;
     federal?: TseElectionData | null;
     estadual?: TseElectionData | null;
     focusCandidates?: any;
     cities?: CityVoteSummary[];
+    states?: any[];
   }>({
     cities: BAHIA_CITIES_DATA,
   });
@@ -133,11 +138,14 @@ export default function Home() {
         const json = await res.json();
         if (json.success) {
           setTseData({
+            presidenteBr: json.presidenteBr,
+            presidenteBa: json.presidenteBa,
             governador: json.governador,
             federal: json.federal,
             estadual: json.estadual,
             focusCandidates: json.focusCandidates,
             cities: json.cities || BAHIA_CITIES_DATA,
+            states: json.states,
           });
           setLastTseUpdate(new Date().toLocaleTimeString("pt-BR"));
         }
@@ -642,7 +650,19 @@ export default function Home() {
                   Cargo em disputa:
                 </span>
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
+                <button
+                  onClick={() => setSelectedCargo("presidente")}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                    selectedCargo === "presidente"
+                      ? "bg-red-500 text-white shadow-md shadow-red-500/20"
+                      : "bg-slate-800 text-slate-300 hover:bg-slate-750"
+                  }`}
+                >
+                  <Flag className="w-3.5 h-3.5" />
+                  Presidente da República
+                </button>
+
                 <button
                   onClick={() => setSelectedCargo("governador")}
                   className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
@@ -680,6 +700,15 @@ export default function Home() {
                 </button>
               </div>
             </div>
+
+            {/* IF PRESIDENTE SELECTED */}
+            {selectedCargo === "presidente" && (
+              <PresidentOverview
+                electionYear={electionYear}
+                tsePresidentBr={tseData.presidenteBr}
+                tsePresidentBa={tseData.presidenteBa}
+              />
+            )}
 
             {/* IF GOVERNADOR SELECTED: Top Governor Placar */}
             {selectedCargo === "governador" && (

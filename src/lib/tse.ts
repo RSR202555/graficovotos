@@ -16,8 +16,9 @@ export interface TseCandidate {
 
 export interface TseElectionData {
   ano: "2026" | "2022";
-  cargo: "governador" | "federal" | "estadual";
-  carper: string; // "3", "6", "7"
+  cargo: "presidente" | "governador" | "federal" | "estadual";
+  carper: string; // "1", "3", "6", "7"
+  uf?: string; // "BR", "BA", etc.
   pst: string; // % seções totalizadas
   s: string; // seções apuradas
   st: string; // seções totalizadas
@@ -32,6 +33,19 @@ export interface TseElectionData {
   dg: string; // data geração
   hg: string; // hora geração
   candidates: TseCandidate[];
+}
+
+export interface StatePresidentSummary {
+  uf: string;
+  stateName: string;
+  region: "Nordeste" | "Sudeste" | "Sul" | "Norte" | "Centro-Oeste";
+  totalVotes: number;
+  pst: string; // % apurado
+  lulaVotes: number;
+  lulaPct: string;
+  bolsonaroVotes: number;
+  bolsonaroPct: string;
+  winner: "Lula" | "Bolsonaro" | "Empate" | "Aguardando";
 }
 
 export interface CityVoteSummary {
@@ -585,7 +599,75 @@ export const BAHIA_CITIES_DATA: CityVoteSummary[] = [
   },
 ];
 
-// Candidates for 2026 General Election in Bahia (Aguardando início da apuração das urnas de 2026)
+// Candidates for 2026 General Election in Bahia & Brasil (Aguardando início da apuração das urnas de 2026)
+export const CANDIDATES_2026_PRESIDENT: TseCandidate[] = [
+  { seq: "1", sqcand: "2026-pres-1", n: "13", nm: "LUIZ INÁCIO LULA DA SILVA", cc: "PT / PC do B / PV / PSB / PSD / MDB", nv: "GERALDO ALCKMIN", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
+  { seq: "2", sqcand: "2026-pres-2", n: "22", nm: "CANDIDATO DE OPOSIÇÃO", cc: "PL / REPUBLICANOS / PP", nv: "A DEFINIR", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
+  { seq: "3", sqcand: "2026-pres-3", n: "15", nm: "TERCEIRA VIA", cc: "UNIÃO / PODE / SOLIDARIEDADE", nv: "A DEFINIR", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
+];
+
+export const CANDIDATES_2022_PRESIDENT_BR: TseCandidate[] = [
+  { seq: "1", sqcand: "2022-pres-1", n: "13", nm: "LUIZ INÁCIO LULA DA SILVA", cc: "PT / PC do B / PV / PSB / SOLIDARIEDADE", nv: "GERALDO ALCKMIN", e: "s", st: "Eleito", dvt: "Válido", vap: "57259504", pvap: "48,43" },
+  { seq: "2", sqcand: "2022-pres-2", n: "22", nm: "JAIR BOLSONARO", cc: "PL / PP / REPUBLICANOS", nv: "BRAGA NETTO", e: "n", st: "2º Turno", dvt: "Válido", vap: "51072345", pvap: "43,20" },
+  { seq: "3", sqcand: "2022-pres-3", n: "15", nm: "SIMONE TEBET", cc: "MDB / FEDERAÇÃO PSDB CIDADANIA / PODE", nv: "MARA GABRILLI", e: "n", st: "Não eleito", dvt: "Válido", vap: "4915423", pvap: "4,16" },
+  { seq: "4", sqcand: "2022-pres-4", n: "12", nm: "CIRO GOMES", cc: "PDT", nv: "ANA PAULA MATOS", e: "n", st: "Não eleito", dvt: "Válido", vap: "3599287", pvap: "3,04" },
+  { seq: "5", sqcand: "2022-pres-5", n: "44", nm: "SORAYA THRONICKE", cc: "UNIÃO", nv: "MARCOS CINTRA", e: "n", st: "Não eleito", dvt: "Válido", vap: "600955", pvap: "0,51" },
+];
+
+export const CANDIDATES_2022_PRESIDENT_BA: TseCandidate[] = [
+  { seq: "1", sqcand: "2022-pres-ba-1", n: "13", nm: "LUIZ INÁCIO LULA DA SILVA", cc: "PT / PC do B / PV / PSB", nv: "GERALDO ALCKMIN", e: "s", st: "1º Lugar na BA", dvt: "Válido", vap: "5873081", pvap: "69,73" },
+  { seq: "2", sqcand: "2022-pres-ba-2", n: "22", nm: "JAIR BOLSONARO", cc: "PL / PP / REPUBLICANOS", nv: "BRAGA NETTO", e: "n", st: "2º Lugar na BA", dvt: "Válido", vap: "2047599", pvap: "24,31" },
+  { seq: "3", sqcand: "2022-pres-ba-3", n: "12", nm: "CIRO GOMES", cc: "PDT", nv: "ANA PAULA MATOS", e: "n", st: "Não eleito", dvt: "Válido", vap: "254767", pvap: "3,02" },
+  { seq: "4", sqcand: "2022-pres-ba-4", n: "15", nm: "SIMONE TEBET", cc: "MDB / PSDB", nv: "MARA GABRILLI", e: "n", st: "Não eleito", dvt: "Válido", vap: "202677", pvap: "2,41" },
+];
+
+// All 27 Brazilian States & Federal District presidential election data
+export const BRAZIL_STATES_PRESIDENT_DATA_2022: StatePresidentSummary[] = [
+  { uf: "SP", stateName: "São Paulo", region: "Sudeste", totalVotes: 27165672, pst: "100,00", lulaVotes: 11519882, lulaPct: "44,69", bolsonaroVotes: 12239989, bolsonaroPct: "47,48", winner: "Bolsonaro" },
+  { uf: "MG", stateName: "Minas Gerais", region: "Sudeste", totalVotes: 12655228, pst: "100,00", lulaVotes: 5809601, lulaPct: "48,29", bolsonaroVotes: 5244757, bolsonaroPct: "43,60", winner: "Lula" },
+  { uf: "RJ", stateName: "Rio de Janeiro", region: "Sudeste", totalVotes: 9948450, pst: "100,00", lulaVotes: 3847143, lulaPct: "40,68", bolsonaroVotes: 4831246, bolsonaroPct: "51,09", winner: "Bolsonaro" },
+  { uf: "BA", stateName: "Bahia", region: "Nordeste", totalVotes: 8866459, pst: "100,00", lulaVotes: 5873081, lulaPct: "69,73", bolsonaroVotes: 2047599, bolsonaroPct: "24,31", winner: "Lula" },
+  { uf: "RS", stateName: "Rio Grande do Sul", region: "Sul", totalVotes: 6980450, pst: "100,00", lulaVotes: 2806710, lulaPct: "42,28", bolsonaroVotes: 3245023, bolsonaroPct: "48,89", winner: "Bolsonaro" },
+  { uf: "PR", stateName: "Paraná", region: "Sul", totalVotes: 6945120, pst: "100,00", lulaVotes: 2363492, lulaPct: "35,99", bolsonaroVotes: 3628612, bolsonaroPct: "55,26", winner: "Bolsonaro" },
+  { uf: "PE", stateName: "Pernambuco", region: "Nordeste", totalVotes: 5612300, pst: "100,00", lulaVotes: 3558322, lulaPct: "65,27", bolsonaroVotes: 1630938, bolsonaroPct: "29,91", winner: "Lula" },
+  { uf: "CE", stateName: "Ceará", region: "Nordeste", totalVotes: 5390100, pst: "100,00", lulaVotes: 3425337, lulaPct: "65,91", bolsonaroVotes: 1320616, bolsonaroPct: "25,38", winner: "Lula" },
+  { uf: "PA", stateName: "Pará", region: "Norte", totalVotes: 4680200, pst: "100,00", lulaVotes: 2443015, lulaPct: "52,22", bolsonaroVotes: 1766378, bolsonaroPct: "37,76", winner: "Lula" },
+  { uf: "SC", stateName: "Santa Catarina", region: "Sul", totalVotes: 4450800, pst: "100,00", lulaVotes: 1279216, lulaPct: "29,54", bolsonaroVotes: 2694406, bolsonaroPct: "62,21", winner: "Bolsonaro" },
+  { uf: "GO", stateName: "Goiás", region: "Centro-Oeste", totalVotes: 3980200, pst: "100,00", lulaVotes: 1454723, lulaPct: "39,51", bolsonaroVotes: 1920203, bolsonaroPct: "52,16", winner: "Bolsonaro" },
+  { uf: "MA", stateName: "Maranhão", region: "Nordeste", totalVotes: 3890400, pst: "100,00", lulaVotes: 2603454, lulaPct: "68,84", bolsonaroVotes: 983861, bolsonaroPct: "26,02", winner: "Lula" },
+  { uf: "PB", stateName: "Paraíba", region: "Nordeste", totalVotes: 2480100, pst: "100,00", lulaVotes: 1554868, lulaPct: "64,21", bolsonaroVotes: 717234, bolsonaroPct: "29,62", winner: "Lula" },
+  { uf: "ES", stateName: "Espírito Santo", region: "Sudeste", totalVotes: 2340500, pst: "100,00", lulaVotes: 896784, lulaPct: "40,40", bolsonaroVotes: 1160013, bolsonaroPct: "52,25", winner: "Bolsonaro" },
+  { uf: "AM", stateName: "Amazonas", region: "Norte", totalVotes: 2150300, pst: "100,00", lulaVotes: 1019684, lulaPct: "49,56", bolsonaroVotes: 880198, bolsonaroPct: "42,80", winner: "Lula" },
+  { uf: "RN", stateName: "Rio Grande do Norte", region: "Nordeste", totalVotes: 2120400, pst: "100,00", lulaVotes: 1261781, lulaPct: "62,98", bolsonaroVotes: 622731, bolsonaroPct: "31,08", winner: "Lula" },
+  { uf: "PI", stateName: "Piauí", region: "Nordeste", totalVotes: 2090300, pst: "100,00", lulaVotes: 1518008, lulaPct: "74,25", bolsonaroVotes: 406897, bolsonaroPct: "19,90", winner: "Lula" },
+  { uf: "MT", stateName: "Mato Grosso", region: "Centro-Oeste", totalVotes: 1980400, pst: "100,00", lulaVotes: 652786, lulaPct: "34,39", bolsonaroVotes: 1101610, bolsonaroPct: "58,03", winner: "Bolsonaro" },
+  { uf: "DF", stateName: "Distrito Federal", region: "Centro-Oeste", totalVotes: 1890300, pst: "100,00", lulaVotes: 649534, lulaPct: "36,85", bolsonaroVotes: 910397, bolsonaroPct: "51,65", winner: "Bolsonaro" },
+  { uf: "AL", stateName: "Alagoas", region: "Nordeste", totalVotes: 1780200, pst: "100,00", lulaVotes: 974156, lulaPct: "56,50", bolsonaroVotes: 621515, bolsonaroPct: "36,05", winner: "Lula" },
+  { uf: "MS", stateName: "Mato Grosso do Sul", region: "Centro-Oeste", totalVotes: 1560200, pst: "100,00", lulaVotes: 589386, lulaPct: "39,04", bolsonaroVotes: 794206, bolsonaroPct: "52,60", winner: "Bolsonaro" },
+  { uf: "SE", stateName: "Sergipe", region: "Nordeste", totalVotes: 1340100, pst: "100,00", lulaVotes: 825279, lulaPct: "63,82", bolsonaroVotes: 371125, bolsonaroPct: "28,70", winner: "Lula" },
+  { uf: "RO", stateName: "Rondônia", region: "Norte", totalVotes: 960200, pst: "100,00", lulaVotes: 261261, lulaPct: "28,98", bolsonaroVotes: 581553, bolsonaroPct: "64,36", winner: "Bolsonaro" },
+  { uf: "TO", stateName: "Tocantins", region: "Norte", totalVotes: 890300, pst: "100,00", lulaVotes: 434303, lulaPct: "50,40", bolsonaroVotes: 379194, bolsonaroPct: "44,00", winner: "Lula" },
+  { uf: "AC", stateName: "Acre", region: "Norte", totalVotes: 450200, pst: "100,00", lulaVotes: 129022, lulaPct: "29,25", bolsonaroVotes: 275581, bolsonaroPct: "62,50", winner: "Bolsonaro" },
+  { uf: "AP", stateName: "Amapá", region: "Norte", totalVotes: 440100, pst: "100,00", lulaVotes: 197382, lulaPct: "45,67", bolsonaroVotes: 196426, bolsonaroPct: "45,46", winner: "Lula" },
+  { uf: "RR", stateName: "Roraima", region: "Norte", totalVotes: 310200, pst: "100,00", lulaVotes: 68760, lulaPct: "23,08", bolsonaroVotes: 207796, bolsonaroPct: "69,57", winner: "Bolsonaro" },
+];
+
+export function getBrazilStatesPresidentData(ano: "2026" | "2022"): StatePresidentSummary[] {
+  if (ano === "2026") {
+    return BRAZIL_STATES_PRESIDENT_DATA_2022.map((s) => ({
+      ...s,
+      totalVotes: 0,
+      pst: "0,00",
+      lulaVotes: 0,
+      lulaPct: "0,00",
+      bolsonaroVotes: 0,
+      bolsonaroPct: "0,00",
+      winner: "Aguardando",
+    }));
+  }
+  return BRAZIL_STATES_PRESIDENT_DATA_2022;
+}
+
 const CANDIDATES_2026_GOVERNOR: TseCandidate[] = [
   { seq: "1", sqcand: "2026-gov-1", n: "13", nm: "JERÔNIMO RODRIGUES", cc: "PT / PC do B / PV / PSB / PSD / MDB", nv: "GERALDO JÚNIOR", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
   { seq: "2", sqcand: "2026-gov-2", n: "44", nm: "ACM NETO", cc: "UNIÃO / REPUBLICANOS / PP / PSDB / CIDADANIA", nv: "ZÉ COCÁ", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
@@ -612,12 +694,14 @@ const CANDIDATES_2026_FEDERAL: TseCandidate[] = [
   { seq: "6", sqcand: "2026-fed-6", n: "1000", nm: "ROGERIA SANTOS", cc: "REPUBLICANOS", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
 ];
 
-// Helper to fetch TSE data for either 2026 or 2022
+// Helper to fetch TSE data for President, Governor, Federal, or State Deputy
 export async function fetchTseData(
-  cargoCode: "3" | "6" | "7",
-  ano: "2026" | "2022" = "2026"
+  cargoCode: "1" | "3" | "6" | "7",
+  ano: "2026" | "2022" = "2026",
+  uf: "br" | "ba" = "ba"
 ): Promise<TseElectionData | null> {
   const cargoMap = {
+    "1": "presidente",
     "3": "governador",
     "6": "federal",
     "7": "estadual",
@@ -628,9 +712,10 @@ export async function fetchTseData(
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
   }
 
-  // If 2026 is requested, check the official TSE 2026 endpoint
+  // If 2026 is requested
   if (ano === "2026") {
-    const url2026 = `https://resultados.tse.jus.br/oficial/ele2026/dados-simplificados/ba/ba-c000${cargoCode}-r.json`;
+    const ufPath = cargoCode === "1" ? (uf === "br" ? "br" : "ba") : "ba";
+    const url2026 = `https://resultados.tse.jus.br/oficial/ele2026/dados-simplificados/${ufPath}/${ufPath}-c000${cargoCode}-r.json`;
     try {
       const res = await fetch(url2026, {
         next: { revalidate: 30 },
@@ -646,6 +731,7 @@ export async function fetchTseData(
           ano: "2026",
           cargo: cargoMap[cargoCode],
           carper: data.carper || cargoCode,
+          uf: ufPath.toUpperCase(),
           pst: data.pst || "0,00",
           s: data.s || "0",
           st: data.st || "0",
@@ -675,14 +761,61 @@ export async function fetchTseData(
         };
       }
     } catch {
-      // Endpoint 2026 opens on election day at 17h, fallback below prepares 2026 candidates
+      // Offline / not open yet
     }
 
     // Return official 2026 candidates dataset
-    return get2026Data(cargoCode);
+    return get2026Data(cargoCode, uf);
   }
 
   // 2022 historical endpoint
+  if (cargoCode === "1") {
+    // President in 2022
+    if (uf === "br") {
+      return {
+        ano: "2022",
+        cargo: "presidente",
+        carper: "1",
+        uf: "BR",
+        pst: "100,00",
+        s: "472075",
+        st: "472075",
+        e: "156454011",
+        c: "123682372",
+        pc: "79,05",
+        a: "32771639",
+        pa: "20,95",
+        tv: "123682372",
+        vnom: "118229719",
+        vl: "0",
+        dg: "02/10/2022",
+        hg: "23:58:00",
+        candidates: CANDIDATES_2022_PRESIDENT_BR,
+      };
+    } else {
+      return {
+        ano: "2022",
+        cargo: "presidente",
+        carper: "1",
+        uf: "BA",
+        pst: "100,00",
+        s: "34424",
+        st: "34424",
+        e: "11273819",
+        c: "8866459",
+        pc: "78,65",
+        a: "2407360",
+        pa: "21,35",
+        tv: "8866459",
+        vnom: "8422734",
+        vl: "0",
+        dg: "02/10/2022",
+        hg: "23:58:00",
+        candidates: CANDIDATES_2022_PRESIDENT_BA,
+      };
+    }
+  }
+
   const url2022 = `https://resultados.tse.jus.br/oficial/ele2022/546/dados-simplificados/ba/ba-c000${cargoCode}-e000546-r.json`;
   try {
     const res = await fetch(url2022, {
@@ -699,6 +832,7 @@ export async function fetchTseData(
         ano: "2022",
         cargo: cargoMap[cargoCode],
         carper: data.carper || cargoCode,
+        uf: "BA",
         pst: data.pst || "100,00",
         s: data.s || "34424",
         st: data.st || "34424",
@@ -728,14 +862,15 @@ export async function fetchTseData(
       };
     }
   } catch {
-    // If offline fallback
+    // Fallback
   }
 
-  return get2026Data(cargoCode);
+  return get2026Data(cargoCode, uf);
 }
 
-function get2026Data(cargoCode: "3" | "6" | "7"): TseElectionData {
+function get2026Data(cargoCode: "1" | "3" | "6" | "7", uf: "br" | "ba" = "ba"): TseElectionData {
   const cargoMap = {
+    "1": "presidente",
     "3": "governador",
     "6": "federal",
     "7": "estadual",
@@ -743,7 +878,9 @@ function get2026Data(cargoCode: "3" | "6" | "7"): TseElectionData {
 
   let candidates: TseCandidate[] = [];
 
-  if (cargoCode === "3") {
+  if (cargoCode === "1") {
+    candidates = CANDIDATES_2026_PRESIDENT;
+  } else if (cargoCode === "3") {
     candidates = CANDIDATES_2026_GOVERNOR;
   } else if (cargoCode === "7") {
     candidates = CANDIDATES_2026_ESTADUAL;
@@ -751,14 +888,17 @@ function get2026Data(cargoCode: "3" | "6" | "7"): TseElectionData {
     candidates = CANDIDATES_2026_FEDERAL;
   }
 
+  const isNational = cargoCode === "1" && uf === "br";
+
   return {
     ano: "2026",
     cargo: cargoMap[cargoCode],
     carper: cargoCode,
+    uf: isNational ? "BR" : "BA",
     pst: "0,00",
     s: "0",
-    st: "34980",
-    e: "11450000",
+    st: isNational ? "472075" : "34980",
+    e: isNational ? "156454000" : "11450000",
     c: "0",
     pc: "0,00",
     a: "0",

@@ -724,13 +724,27 @@ export default function Home() {
                         {jeronimo?.st || (electionYear === "2026" ? "Aguardando apuração" : "2º Turno / Eleito")}
                       </span>
                     </div>
-                    <h3 className="text-xl font-extrabold text-white">
-                      Jerônimo Rodrigues
-                    </h3>
-                    <p className="text-xs text-emerald-400/80 font-medium mt-0.5">
-                      Vice: {jeronimo?.nv || "Geraldo Júnior"}
-                    </p>
-                    <div className="flex items-baseline gap-2 mt-2">
+                    <div className="flex items-center gap-3.5 mb-2">
+                      <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-emerald-500 bg-slate-800 shrink-0 shadow-md shadow-emerald-500/20">
+                        <img
+                          src="/imagens/jeronimo.png"
+                          alt="Jerônimo Rodrigues"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLElement).style.display = "none";
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-extrabold text-white">
+                          Jerônimo Rodrigues
+                        </h3>
+                        <p className="text-xs text-emerald-400/80 font-medium mt-0.5">
+                          Vice: {jeronimo?.nv || "Geraldo Júnior"}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-baseline gap-2 mt-2 pt-2 border-t border-slate-800/80">
                       <span className="text-3xl font-black text-emerald-400 font-mono">
                         {Number(jeronimo?.vap || 0).toLocaleString("pt-BR")}
                       </span>
@@ -753,13 +767,27 @@ export default function Home() {
                         {acmNeto?.st || (electionYear === "2026" ? "Aguardando apuração" : "2º Turno")}
                       </span>
                     </div>
-                    <h3 className="text-xl font-extrabold text-white">
-                      ACM Neto
-                    </h3>
-                    <p className="text-xs text-blue-400/80 font-medium mt-0.5">
-                      Vice: {acmNeto?.nv || (electionYear === "2026" ? "Zé Cocá" : "Ana Coelho")}
-                    </p>
-                    <div className="flex items-baseline gap-2 mt-2">
+                    <div className="flex items-center gap-3.5 mb-2">
+                      <div className="w-14 h-14 rounded-full overflow-hidden border-2 border-blue-500 bg-slate-800 shrink-0 shadow-md shadow-blue-500/20">
+                        <img
+                          src="/imagens/acm_neto.jpg"
+                          alt="ACM Neto"
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            (e.currentTarget as HTMLElement).style.display = "none";
+                          }}
+                        />
+                      </div>
+                      <div>
+                        <h3 className="text-xl font-extrabold text-white">
+                          ACM Neto
+                        </h3>
+                        <p className="text-xs text-blue-400/80 font-medium mt-0.5">
+                          Vice: {acmNeto?.nv || (electionYear === "2026" ? "Zé Cocá" : "Ana Coelho")}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-baseline gap-2 mt-2 pt-2 border-t border-slate-800/80">
                       <span className="text-3xl font-black text-blue-400 font-mono">
                         {Number(acmNeto?.vap || 0).toLocaleString("pt-BR")}
                       </span>

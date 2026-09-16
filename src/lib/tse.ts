@@ -602,7 +602,7 @@ export const BAHIA_CITIES_DATA: CityVoteSummary[] = [
 // Candidates for 2026 General Election in Bahia & Brasil (Aguardando início da apuração das urnas de 2026)
 export const CANDIDATES_2026_PRESIDENT: TseCandidate[] = [
   { seq: "1", sqcand: "2026-pres-1", n: "13", nm: "LUIZ INÁCIO LULA DA SILVA", cc: "PT / PC do B / PV / PSB / PSD / MDB", nv: "GERALDO ALCKMIN", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
-  { seq: "2", sqcand: "2026-pres-2", n: "22", nm: "CANDIDATO DE OPOSIÇÃO", cc: "PL / REPUBLICANOS / PP", nv: "A DEFINIR", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
+  { seq: "2", sqcand: "2026-pres-2", n: "22", nm: "FLÁVIO BOLSONARO", cc: "PL / REPUBLICANOS / PP", nv: "A DEFINIR", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
   { seq: "3", sqcand: "2026-pres-3", n: "15", nm: "TERCEIRA VIA", cc: "UNIÃO / PODE / SOLIDARIEDADE", nv: "A DEFINIR", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
 ];
 

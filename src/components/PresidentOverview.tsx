@@ -226,68 +226,108 @@ export default function PresidentOverview({
           {/* Candidate Placar Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {/* Lula (13) */}
-            <div className="p-6 rounded-3xl bg-slate-900/90 border border-red-500/30 shadow-xl relative overflow-hidden backdrop-blur-md">
-              <div className="flex items-center justify-between mb-3">
-                <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">
-                  13 • PT / COLIGAÇÃO
-                </span>
-                <span className="text-xs font-bold text-red-400">
-                  {lula?.st || (is2026 ? "Aguardando apuração" : "Eleito")}
-                </span>
+            <div className="p-6 rounded-3xl bg-slate-900/90 border border-red-500/30 shadow-xl relative overflow-hidden backdrop-blur-md flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-red-500/20 text-red-400 border border-red-500/30">
+                    13 • PT / COLIGAÇÃO
+                  </span>
+                  <span className="text-xs font-bold text-red-400">
+                    {lula?.st || (is2026 ? "Aguardando apuração" : "Eleito")}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-red-500 bg-slate-800 shrink-0 shadow-lg shadow-red-500/20">
+                    <img
+                      src="/imagens/lula.jpg"
+                      alt="Lula"
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLElement).style.display = "none";
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-xl sm:text-2xl font-black text-white leading-tight">
+                      {lula?.nm || "LUIZ INÁCIO LULA DA SILVA"}
+                    </h3>
+                    <p className="text-xs text-red-400/80 font-medium mt-0.5">
+                      Vice: {lula?.nv || "Geraldo Alckmin"}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-2xl font-black text-white">
-                {lula?.nm || "LUIZ INÁCIO LULA DA SILVA"}
-              </h3>
-              <p className="text-xs text-red-400/80 font-medium mt-0.5">
-                Vice: {lula?.nv || "Geraldo Alckmin"}
-              </p>
-              <div className="flex items-baseline gap-2 mt-4">
-                <span className="text-3xl sm:text-4xl font-black text-red-400 font-mono tabular-nums">
-                  {Number(lula?.vap || 0).toLocaleString("pt-BR")}
-                </span>
-                <span className="text-base font-bold text-slate-400 font-mono tabular-nums">
-                  ({lula?.pvap || "0,00"}%)
-                </span>
+
+              <div className="mt-4 pt-4 border-t border-slate-800/80">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl sm:text-4xl font-black text-red-400 font-mono tabular-nums">
+                    {Number(lula?.vap || 0).toLocaleString("pt-BR")}
+                  </span>
+                  <span className="text-base font-bold text-slate-400 font-mono tabular-nums">
+                    ({lula?.pvap || "0,00"}%)
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 mt-1">
+                  Votos válidos em{" "}
+                  {activeScope === "bahia"
+                    ? "todo o estado da Bahia"
+                    : "todo o território nacional (Brasil)"}
+                </p>
               </div>
-              <p className="text-xs text-slate-400 mt-2">
-                Votos válidos em{" "}
-                {activeScope === "bahia"
-                  ? "todo o estado da Bahia"
-                  : "todo o território nacional (Brasil)"}
-              </p>
             </div>
 
-            {/* Oposição / Bolsonaro (22) */}
-            <div className="p-6 rounded-3xl bg-slate-900/90 border border-blue-500/30 shadow-xl relative overflow-hidden backdrop-blur-md">
-              <div className="flex items-center justify-between mb-3">
-                <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                  22 • PL / COLIGAÇÃO
-                </span>
-                <span className="text-xs font-bold text-blue-400">
-                  {oposicao?.st || (is2026 ? "Aguardando apuração" : "2º Turno")}
-                </span>
+            {/* Oposição / Flávio Bolsonaro (2026) / Jair Bolsonaro (2022) */}
+            <div className="p-6 rounded-3xl bg-slate-900/90 border border-blue-500/30 shadow-xl relative overflow-hidden backdrop-blur-md flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="px-2.5 py-0.5 rounded-md text-[11px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                    22 • PL / COLIGAÇÃO
+                  </span>
+                  <span className="text-xs font-bold text-blue-400">
+                    {oposicao?.st || (is2026 ? "Aguardando apuração" : "2º Turno")}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="w-16 h-16 rounded-full overflow-hidden border-2 border-blue-500 bg-slate-800 shrink-0 shadow-lg shadow-blue-500/20">
+                    <img
+                      src={is2026 ? "/imagens/flavio_bolsonaro.jpg" : "/imagens/bolsonaro.jpg"}
+                      alt={is2026 ? "Flávio Bolsonaro" : "Jair Bolsonaro"}
+                      className="w-full h-full object-cover"
+                      onError={(e) => {
+                        (e.currentTarget as HTMLElement).style.display = "none";
+                      }}
+                    />
+                  </div>
+                  <div>
+                    <h3 className="text-xl sm:text-2xl font-black text-white leading-tight">
+                      {oposicao?.nm ||
+                        (is2026 ? "FLÁVIO BOLSONARO" : "JAIR BOLSONARO")}
+                    </h3>
+                    <p className="text-xs text-blue-400/80 font-medium mt-0.5">
+                      Vice: {oposicao?.nv || (is2026 ? "A Definir" : "Braga Netto")}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <h3 className="text-2xl font-black text-white">
-                {oposicao?.nm ||
-                  (is2026 ? "CANDIDATO DE OPOSIÇÃO" : "JAIR BOLSONARO")}
-              </h3>
-              <p className="text-xs text-blue-400/80 font-medium mt-0.5">
-                Vice: {oposicao?.nv || (is2026 ? "A Definir" : "Braga Netto")}
-              </p>
-              <div className="flex items-baseline gap-2 mt-4">
-                <span className="text-3xl sm:text-4xl font-black text-blue-400 font-mono tabular-nums">
-                  {Number(oposicao?.vap || 0).toLocaleString("pt-BR")}
-                </span>
-                <span className="text-base font-bold text-slate-400 font-mono tabular-nums">
-                  ({oposicao?.pvap || "0,00"}%)
-                </span>
+
+              <div className="mt-4 pt-4 border-t border-slate-800/80">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-3xl sm:text-4xl font-black text-blue-400 font-mono tabular-nums">
+                    {Number(oposicao?.vap || 0).toLocaleString("pt-BR")}
+                  </span>
+                  <span className="text-base font-bold text-slate-400 font-mono tabular-nums">
+                    ({oposicao?.pvap || "0,00"}%)
+                  </span>
+                </div>
+                <p className="text-xs text-slate-400 mt-1">
+                  Votos válidos em{" "}
+                  {activeScope === "bahia"
+                    ? "todo o estado da Bahia"
+                    : "todo o território nacional (Brasil)"}
+                </p>
               </div>
-              <p className="text-xs text-slate-400 mt-2">
-                Votos válidos em{" "}
-                {activeScope === "bahia"
-                  ? "todo o estado da Bahia"
-                  : "todo o território nacional (Brasil)"}
-              </p>
             </div>
           </div>
 

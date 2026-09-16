@@ -153,46 +153,70 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
             </div>
 
             {/* Candidate 1: Lula */}
-            <div className="flex flex-col gap-1.5 pt-2">
-              <div className="flex justify-between items-center text-xs">
-                <div>
-                  <span className="font-bold text-white">1. Luiz Inácio Lula da Silva (PT)</span>
-                  <span className="text-[10px] text-slate-400 block font-medium">
-                    Vice: Geraldo Alckmin • 13
+            <div className="flex items-center gap-3 pt-2">
+              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-red-500/70 bg-slate-800 shrink-0 shadow-md">
+                <img
+                  src="/imagens/lula.jpg"
+                  alt="Lula"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLElement).style.display = "none";
+                  }}
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-center text-xs">
+                  <div>
+                    <span className="font-bold text-white">1. Luiz Inácio Lula da Silva (PT)</span>
+                    <span className="text-[10px] text-slate-400 block font-medium">
+                      Vice: Geraldo Alckmin • 13
+                    </span>
+                  </div>
+                  <span className="font-mono text-red-400 font-bold tabular-nums">
+                    {lulaVotes.toLocaleString("pt-BR")} votos ({lulaPct}%)
                   </span>
                 </div>
-                <span className="font-mono text-red-400 font-bold tabular-nums">
-                  {lulaVotes.toLocaleString("pt-BR")} votos ({lulaPct}%)
-                </span>
-              </div>
-              <div className="w-full h-3 rounded-full bg-slate-800 overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-red-600 to-rose-500 rounded-full transition-all duration-500"
-                  style={{ width: `${is2026 ? 0 : lulaPct}%` }}
-                />
+                <div className="w-full h-2.5 rounded-full bg-slate-800 overflow-hidden mt-1.5">
+                  <div
+                    className="h-full bg-gradient-to-r from-red-600 to-rose-500 rounded-full transition-all duration-500"
+                    style={{ width: `${is2026 ? 0 : lulaPct}%` }}
+                  />
+                </div>
               </div>
             </div>
 
-            {/* Candidate 2: Bolsonaro / Oposição */}
-            <div className="flex flex-col gap-1.5 pt-2">
-              <div className="flex justify-between items-center text-xs">
-                <div>
-                  <span className="font-bold text-white">
-                    2. {is2026 ? "Candidato da Oposição (PL)" : "Jair Bolsonaro (PL)"}
-                  </span>
-                  <span className="text-[10px] text-slate-400 block font-medium">
-                    Vice: {is2026 ? "A definir" : "Braga Netto"} • 22
+            {/* Candidate 2: Flávio Bolsonaro / Jair Bolsonaro */}
+            <div className="flex items-center gap-3 pt-2">
+              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-500/70 bg-slate-800 shrink-0 shadow-md">
+                <img
+                  src={is2026 ? "/imagens/flavio_bolsonaro.jpg" : "/imagens/bolsonaro.jpg"}
+                  alt={is2026 ? "Flávio Bolsonaro" : "Jair Bolsonaro"}
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLElement).style.display = "none";
+                  }}
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-center text-xs">
+                  <div>
+                    <span className="font-bold text-white">
+                      2. {is2026 ? "Flávio Bolsonaro (PL)" : "Jair Bolsonaro (PL)"}
+                    </span>
+                    <span className="text-[10px] text-slate-400 block font-medium">
+                      Vice: {is2026 ? "A definir" : "Braga Netto"} • 22
+                    </span>
+                  </div>
+                  <span className="font-mono text-blue-400 font-bold tabular-nums">
+                    {bolsonaroVotes.toLocaleString("pt-BR")} votos ({bolsonaroPct}%)
                   </span>
                 </div>
-                <span className="font-mono text-blue-400 font-bold tabular-nums">
-                  {bolsonaroVotes.toLocaleString("pt-BR")} votos ({bolsonaroPct}%)
-                </span>
-              </div>
-              <div className="w-full h-3 rounded-full bg-slate-800 overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-blue-600 to-cyan-500 rounded-full transition-all duration-500"
-                  style={{ width: `${is2026 ? 0 : bolsonaroPct}%` }}
-                />
+                <div className="w-full h-2.5 rounded-full bg-slate-800 overflow-hidden mt-1.5">
+                  <div
+                    className="h-full bg-gradient-to-r from-blue-600 to-cyan-500 rounded-full transition-all duration-500"
+                    style={{ width: `${is2026 ? 0 : bolsonaroPct}%` }}
+                  />
+                </div>
               </div>
             </div>
 
@@ -221,44 +245,68 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
             </div>
 
             {/* Candidate 1: Jerônimo */}
-            <div className="flex flex-col gap-1.5 pt-2">
-              <div className="flex justify-between items-center text-xs">
-                <div>
-                  <span className="font-bold text-white">1. Jerônimo Rodrigues (PT)</span>
-                  <span className="text-[10px] text-slate-400 block font-medium">
-                    Vice: Geraldo Júnior
+            <div className="flex items-center gap-3 pt-2">
+              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-emerald-500/70 bg-slate-800 shrink-0 shadow-md">
+                <img
+                  src="/imagens/jeronimo.png"
+                  alt="Jerônimo Rodrigues"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLElement).style.display = "none";
+                  }}
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-center text-xs">
+                  <div>
+                    <span className="font-bold text-white">1. Jerônimo Rodrigues (PT)</span>
+                    <span className="text-[10px] text-slate-400 block font-medium">
+                      Vice: Geraldo Júnior • 13
+                    </span>
+                  </div>
+                  <span className="font-mono text-emerald-400 font-bold tabular-nums">
+                    {jeronimoVotes.toLocaleString("pt-BR")} votos ({jeronimoPct}%)
                   </span>
                 </div>
-                <span className="font-mono text-emerald-400 font-bold">
-                  {jeronimoVotes.toLocaleString("pt-BR")} votos ({jeronimoPct}%)
-                </span>
-              </div>
-              <div className="w-full h-3 rounded-full bg-slate-800 overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500"
-                  style={{ width: `${is2026 ? 0 : jeronimoPct}%` }}
-                />
+                <div className="w-full h-2.5 rounded-full bg-slate-800 overflow-hidden mt-1.5">
+                  <div
+                    className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500"
+                    style={{ width: `${is2026 ? 0 : jeronimoPct}%` }}
+                  />
+                </div>
               </div>
             </div>
 
             {/* Candidate 2: ACM Neto */}
-            <div className="flex flex-col gap-1.5 pt-2">
-              <div className="flex justify-between items-center text-xs">
-                <div>
-                  <span className="font-bold text-white">2. ACM Neto (UNIÃO)</span>
-                  <span className="text-[10px] text-slate-400 block font-medium">
-                    Vice: {is2026 ? "Zé Cocá" : "Ana Coelho"}
+            <div className="flex items-center gap-3 pt-2">
+              <div className="w-10 h-10 rounded-full overflow-hidden border-2 border-blue-500/70 bg-slate-800 shrink-0 shadow-md">
+                <img
+                  src="/imagens/acm_neto.jpg"
+                  alt="ACM Neto"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    (e.currentTarget as HTMLElement).style.display = "none";
+                  }}
+                />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex justify-between items-center text-xs">
+                  <div>
+                    <span className="font-bold text-white">2. ACM Neto (UNIÃO)</span>
+                    <span className="text-[10px] text-slate-400 block font-medium">
+                      Vice: {is2026 ? "Zé Cocá" : "Ana Coelho"} • 44
+                    </span>
+                  </div>
+                  <span className="font-mono text-blue-400 font-bold tabular-nums">
+                    {acmNetoVotes.toLocaleString("pt-BR")} votos ({acmNetoPct}%)
                   </span>
                 </div>
-                <span className="font-mono text-blue-400 font-bold">
-                  {acmNetoVotes.toLocaleString("pt-BR")} votos ({acmNetoPct}%)
-                </span>
-              </div>
-              <div className="w-full h-3 rounded-full bg-slate-800 overflow-hidden">
-                <div
-                  className="h-full bg-gradient-to-r from-blue-500 to-indigo-400 rounded-full transition-all duration-500"
-                  style={{ width: `${is2026 ? 0 : acmNetoPct}%` }}
-                />
+                <div className="w-full h-2.5 rounded-full bg-slate-800 overflow-hidden mt-1.5">
+                  <div
+                    className="h-full bg-gradient-to-r from-blue-500 to-indigo-400 rounded-full transition-all duration-500"
+                    style={{ width: `${is2026 ? 0 : acmNetoPct}%` }}
+                  />
+                </div>
               </div>
             </div>
 
@@ -269,10 +317,10 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
                   <div>
                     <span className="font-bold text-slate-300">3. João Roma (PL)</span>
                     <span className="text-[10px] text-slate-400 block font-medium">
-                      Vice: Leonidia Umbelina
+                      Vice: Leonidia Umbelina • 22
                     </span>
                   </div>
-                  <span className="font-mono text-amber-400 font-bold">
+                  <span className="font-mono text-amber-400 font-bold tabular-nums">
                     {joaoRomaVotes.toLocaleString("pt-BR")} votos ({joaoRomaPct}%)
                   </span>
                 </div>
@@ -309,8 +357,15 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
             {/* Roberto Carlos (43333) */}
             <div className="p-3.5 rounded-xl bg-slate-900 border border-amber-500/30 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-amber-400 text-slate-950 flex items-center justify-center font-black text-sm">
-                  RC
+                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-amber-400 bg-slate-800 shrink-0 shadow-md">
+                  <img
+                    src="/imagens/roberto carlos .jpeg"
+                    alt="Roberto Carlos"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLElement).style.display = "none";
+                    }}
+                  />
                 </div>
                 <div>
                   <span className="font-extrabold text-white text-sm block">Roberto Carlos</span>
@@ -320,7 +375,7 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
                 </div>
               </div>
               <div className="text-right">
-                <span className="font-mono font-black text-xl text-amber-400 block">
+                <span className="font-mono font-black text-xl text-amber-400 block tabular-nums">
                   {rcVotes.toLocaleString("pt-BR")}
                 </span>
                 <span className="text-[11px] text-slate-400 font-medium">
@@ -332,8 +387,15 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
             {/* Vitor Bonfim (4070) */}
             <div className="p-3.5 rounded-xl bg-slate-900 border border-emerald-500/30 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-emerald-400 text-slate-950 flex items-center justify-center font-black text-sm">
-                  VB
+                <div className="w-12 h-12 rounded-full overflow-hidden border-2 border-emerald-400 bg-slate-800 shrink-0 shadow-md">
+                  <img
+                    src="/imagens/vitor bomfim.17.jpeg"
+                    alt="Vitor Bonfim"
+                    className="w-full h-full object-cover"
+                    onError={(e) => {
+                      (e.currentTarget as HTMLElement).style.display = "none";
+                    }}
+                  />
                 </div>
                 <div>
                   <span className="font-extrabold text-white text-sm block">Vitor Bonfim</span>
@@ -343,7 +405,7 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
                 </div>
               </div>
               <div className="text-right">
-                <span className="font-mono font-black text-xl text-emerald-400 block">
+                <span className="font-mono font-black text-xl text-emerald-400 block tabular-nums">
                   {vbVotes.toLocaleString("pt-BR")}
                 </span>
                 <span className="text-[11px] text-slate-400 font-medium">

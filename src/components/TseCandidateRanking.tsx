@@ -228,12 +228,12 @@ export default function TseCandidateRanking({
                     </td>
 
                     {/* Votes */}
-                    <td className="py-3.5 px-4 text-right font-bold text-white font-mono">
+                    <td className="py-3.5 px-4 text-right font-bold text-white font-mono tabular-nums">
                       {Number(cand.vap).toLocaleString("pt-BR")}
                     </td>
 
                     {/* Percentage */}
-                    <td className="py-3.5 px-4 text-right font-extrabold text-amber-400">
+                    <td className="py-3.5 px-4 text-right font-extrabold text-amber-400 font-mono tabular-nums">
                       {cand.pvap}%
                     </td>
 

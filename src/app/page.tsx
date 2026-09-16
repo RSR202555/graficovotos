@@ -333,8 +333,26 @@ export default function Home() {
 
   if (isAuthChecking) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
-        <div className="w-8 h-8 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col animate-pulse">
+        <header className="border-b border-slate-800 bg-slate-900/80 h-16 px-4 sm:px-8 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-slate-800" />
+            <div className="space-y-1.5">
+              <div className="w-36 h-4 rounded bg-slate-800" />
+              <div className="w-24 h-2.5 rounded bg-slate-800/60" />
+            </div>
+          </div>
+          <div className="w-32 h-8 rounded-xl bg-slate-800" />
+        </header>
+        <div className="h-10 bg-slate-900/50 border-b border-slate-800" />
+        <main className="max-w-7xl w-full mx-auto px-4 py-8 space-y-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div key={i} className="h-28 rounded-2xl bg-slate-900/70 border border-slate-800" />
+            ))}
+          </div>
+          <div className="h-72 rounded-3xl bg-slate-900/70 border border-slate-800" />
+        </main>
       </div>
     );
   }
@@ -519,6 +537,104 @@ export default function Home() {
         {/* ========================================================= */}
         {activeMainTab === "bahia" && (
           <div className="space-y-6">
+            {/* 4 Executive KPIs (Stripe / Linear Style - 13-dashboard-specialist & 01-master-ui) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* KPI 1: Seções Totalizadas */}
+              <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800/80 shadow-lg backdrop-blur-md hover:border-slate-700/80 transition group">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Seções Apuradas (BA)
+                  </span>
+                  <div className="p-2 rounded-xl bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    <Radio className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl sm:text-3xl font-black text-white font-mono tabular-nums">
+                    {tsePst}%
+                  </span>
+                  <span className="text-xs text-slate-400 font-medium">
+                    {electionYear === "2026" ? "0 de 34.980 urnas" : "34.980 urnas"}
+                  </span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-slate-800 mt-3 overflow-hidden">
+                  <div
+                    className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 rounded-full transition-all duration-700"
+                    style={{ width: `${parseFloat(tsePst.replace(",", ".")) || 0}%` }}
+                  />
+                </div>
+              </div>
+
+              {/* KPI 2: Eleitorado Apto */}
+              <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800/80 shadow-lg backdrop-blur-md hover:border-slate-700/80 transition group">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Eleitorado Apto (Bahia)
+                  </span>
+                  <div className="p-2 rounded-xl bg-purple-500/10 text-purple-400 border border-purple-500/20">
+                    <Users className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl sm:text-3xl font-black text-white font-mono tabular-nums">
+                    11.450.000
+                  </span>
+                  <span className="text-xs text-purple-400 font-medium">
+                    417 municípios
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 mt-2">
+                  Maior colégio eleitoral do Nordeste
+                </p>
+              </div>
+
+              {/* KPI 3: Votos Computados */}
+              <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800/80 shadow-lg backdrop-blur-md hover:border-slate-700/80 transition group">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Votos Computados
+                  </span>
+                  <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <Vote className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl sm:text-3xl font-black text-emerald-400 font-mono tabular-nums">
+                    {electionYear === "2026" ? "0" : "9.120.000"}
+                  </span>
+                  <span className="text-xs text-slate-400 font-medium">
+                    {electionYear === "2026" ? "(0,00%)" : "(79,65%)"}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 mt-2">
+                  {electionYear === "2026" ? "Aguardando abertura dos boletins de urna" : "Comparecimento no 1º turno"}
+                </p>
+              </div>
+
+              {/* KPI 4: Abstenção */}
+              <div className="p-5 rounded-2xl bg-slate-900/80 border border-slate-800/80 shadow-lg backdrop-blur-md hover:border-slate-700/80 transition group">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Abstenção Eleitoral
+                  </span>
+                  <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400 border border-amber-500/20">
+                    <TrendingUp className="w-4 h-4" />
+                  </div>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-2xl sm:text-3xl font-black text-amber-400 font-mono tabular-nums">
+                    {electionYear === "2026" ? "0,00%" : "20,35%"}
+                  </span>
+                  <span className="text-xs text-slate-400 font-medium">
+                    {electionYear === "2026" ? "0 eleitores" : "2.330.000 eleitores"}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-500 mt-2">
+                  {electionYear === "2026" ? "Taxa de abstenção estimada" : "Taxa consolidada de abstenção"}
+                </p>
+              </div>
+            </div>
+
             {/* Cargo Filter Selector */}
             <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
               <div className="flex items-center gap-2">

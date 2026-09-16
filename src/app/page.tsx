@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import {
   VoteRecord,
@@ -9,6 +9,7 @@ import {
   supabase,
   isSupabaseConfigured,
 } from "@/lib/supabase";
+import { TseElectionData, CityVoteSummary, BAHIA_CITIES_DATA } from "@/lib/tse";
 import {
   Users,
   MapPin,
@@ -23,10 +24,18 @@ import {
   ExternalLink,
   LogOut,
   Trash2,
+  Building2,
+  Globe,
+  Radio,
+  Trophy,
+  Crown,
+  CheckCircle,
 } from "lucide-react";
 import MunicipalityMap from "@/components/MunicipalityMap";
 import VotingCharts from "@/components/VotingCharts";
 import LocationPickerMap from "@/components/LocationPickerMap";
+import TseCandidateRanking from "@/components/TseCandidateRanking";
+import BahiaCitiesOverview from "@/components/BahiaCitiesOverview";
 
 // No mock initial data
 const INITIAL_CANDIDATES: Candidate[] = [];
@@ -54,6 +63,22 @@ export default function Home() {
   const [newCommunityName, setNewCommunityName] = useState("");
   const [newCommunityLat, setNewCommunityLat] = useState("");
   const [newCommunityLng, setNewCommunityLng] = useState("");
+
+  // TSE Live Data States
+  const [activeMainTab, setActiveMainTab] = useState<"bahia" | "cidades" | "satiro-dias">("bahia");
+  const [selectedCargo, setSelectedCargo] = useState<"governador" | "estadual" | "federal">("governador");
+  const [tseLoading, setTseLoading] = useState(false);
+  const [autoRefresh, setAutoRefresh] = useState(true);
+  const [lastTseUpdate, setLastTseUpdate] = useState<string>("");
+  const [tseData, setTseData] = useState<{
+    governador?: TseElectionData | null;
+    federal?: TseElectionData | null;
+    estadual?: TseElectionData | null;
+    focusCandidates?: any;
+    cities?: CityVoteSummary[];
+  }>({
+    cities: BAHIA_CITIES_DATA,
+  });
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -97,13 +122,48 @@ export default function Home() {
     }
   };
 
+  // Fetch TSE official results
+  const loadTseData = useCallback(async () => {
+    try {
+      setTseLoading(true);
+      const res = await fetch("/api/tse");
+      if (res.ok) {
+        const json = await res.json();
+        if (json.success) {
+          setTseData({
+            governador: json.governador,
+            federal: json.federal,
+            estadual: json.estadual,
+            focusCandidates: json.focusCandidates,
+            cities: json.cities || BAHIA_CITIES_DATA,
+          });
+          setLastTseUpdate(new Date().toLocaleTimeString("pt-BR"));
+        }
+      }
+    } catch (err) {
+      console.error("Erro ao carregar TSE:", err);
+    } finally {
+      setTseLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     if (isSupabaseConfigured) {
       loadData();
     }
-  }, []);
+    loadTseData();
+  }, [loadTseData]);
 
-  // Compute metrics
+  // Polling for TSE real-time
+  useEffect(() => {
+    if (!autoRefresh) return;
+    const interval = setInterval(() => {
+      loadTseData();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [autoRefresh, loadTseData]);
+
+  // Compute metrics for local Sátiro Dias
   const totalVotes = useMemo(() => {
     return votes.reduce((acc, curr) => acc + (Number(curr.votes) || 0), 0);
   }, [votes]);
@@ -163,21 +223,27 @@ export default function Home() {
     const lng = newCommunityLng ? parseFloat(newCommunityLng) : null;
 
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from("communities").insert([
-        { name: newCommunityName, latitude: lat, longitude: lng },
-      ]).select();
+      const { data, error } = await supabase
+        .from("communities")
+        .insert([{ name: newCommunityName, latitude: lat, longitude: lng }])
+        .select();
 
-      if (!error && data) {
-        setCommunities((prev) => [...prev, ...data]);
+      if (error) {
+        alert("Erro ao criar comunidade: " + error.message);
+        return;
+      }
+
+      if (data && data[0]) {
+        setCommunities([...communities, data[0]]);
       }
     } else {
       const newComm: Community = {
-        id: `mock-comm-${Date.now()}`,
+        id: "comm-" + Date.now(),
         name: newCommunityName,
         latitude: lat,
         longitude: lng,
       };
-      setCommunities((prev) => [...prev, newComm]);
+      setCommunities([...communities, newComm]);
     }
 
     setNewCommunityName("");
@@ -186,63 +252,69 @@ export default function Home() {
     setShowAddCommunityModal(false);
   };
 
-  const handleDeleteCommunity = async (e: React.MouseEvent, id: string) => {
-    e.stopPropagation(); // prevent row click
-    if (!confirm("Tem certeza que deseja excluir esta comunidade? Todos os votos associados serão apagados.")) return;
-
-    if (isSupabaseConfigured && supabase) {
-      const { error } = await supabase.from("communities").delete().eq("id", id);
-      
-      if (error) {
-        console.error("Erro ao excluir:", error);
-        alert("Ops! Ocorreu um erro de permissão no banco de dados. Você precisa autorizar a exclusão (DELETE) nas regras do Supabase.");
-        return; // Stop here, don't update local state
-      }
-    }
-    
-    // Only update local state if the database deletion succeeded
-    setCommunities((prev) => prev.filter((c) => c.id !== id));
-    setVotes((prev) => prev.filter((v) => v.community_id !== id));
-    if (selectedCommunityId === id) setSelectedCommunityId(null);
-  };
-
-
   const handleAddVote = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formCommunity || !formCandidate || !formVotes) return;
 
-    const numVotes = parseInt(formVotes, 10);
-    if (isNaN(numVotes) || numVotes < 0) return;
+    const vCount = parseInt(formVotes);
+    if (isNaN(vCount) || vCount < 0) return;
 
     if (isSupabaseConfigured && supabase) {
-      const { data, error } = await supabase.from("vote_records").insert([
-        {
-          community_id: formCommunity,
-          candidate_id: formCandidate,
-          votes: numVotes,
-        },
-      ]).select();
+      const { data, error } = await supabase
+        .from("vote_records")
+        .insert([
+          {
+            community_id: formCommunity,
+            candidate_id: formCandidate,
+            votes: vCount,
+          },
+        ])
+        .select();
 
-      if (!error && data) {
-        setVotes((prev) => [...prev, ...data]);
+      if (error) {
+        alert("Erro ao registrar votos: " + error.message);
+        return;
+      }
+
+      if (data && data[0]) {
+        setVotes([...votes, data[0]]);
       }
     } else {
-      // Local state fallback
-      const newRecord: VoteRecord = {
-        id: `mock-${Date.now()}`,
+      const newRec: VoteRecord = {
+        id: "vote-" + Date.now(),
         community_id: formCommunity,
         candidate_id: formCandidate,
-        votes: numVotes,
+        votes: vCount,
         recorded_at: new Date().toISOString(),
       };
-      setVotes((prev) => [...prev, newRecord]);
+      setVotes([...votes, newRec]);
     }
 
+    setFormCommunity("");
+    setFormCandidate("");
     setFormVotes("");
     setShowModal(false);
   };
 
-  const handleUpdateCoordinates = (communityId: string, lat: number, lng: number) => {
+  const handleDeleteVote = async (id: string) => {
+    if (isSupabaseConfigured && supabase) {
+      const { error } = await supabase
+        .from("vote_records")
+        .delete()
+        .eq("id", id);
+      if (error) {
+        alert("Erro ao excluir: " + error.message);
+        return;
+      }
+    }
+    setVotes(votes.filter((v) => v.id !== id));
+  };
+
+  const handleUpdateCoordinates = (
+    communityId: string,
+    lat: number,
+    lng: number
+  ) => {
     setCommunities((prev) =>
       prev.map((c) =>
         c.id === communityId ? { ...c, latitude: lat, longitude: lng } : c
@@ -265,336 +337,711 @@ export default function Home() {
     );
   }
 
+  // Get current sections % apuradas from TSE
+  const tsePst =
+    tseData.governador?.pst ||
+    tseData.estadual?.pst ||
+    tseData.federal?.pst ||
+    "100,00";
+
+  const governorCandidates = tseData.governador?.candidates || [];
+  const jeronimo = governorCandidates.find((c) => c.n === "13");
+  const acmNeto = governorCandidates.find((c) => c.n === "44");
+  const joaoRoma = governorCandidates.find((c) => c.n === "22");
+
+  const robertoCarlos = tseData.focusCandidates?.robertoCarlos;
+  const vitorBonfim = tseData.focusCandidates?.vitorBonfim;
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-blue-600 selection:text-white">
       {/* Top Navbar */}
-      <header className="border-b border-slate-800/80 bg-slate-900/60 backdrop-blur-md sticky top-0 z-40">
+      <header className="border-b border-slate-800/80 bg-slate-900/80 backdrop-blur-md sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center shadow-lg shadow-blue-500/25">
               <Vote className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="font-bold text-lg leading-tight tracking-tight">
-                Painel de Votos
+              <h1 className="font-bold text-base sm:text-lg leading-tight tracking-tight">
+                Painel Eleitoral da Bahia
               </h1>
               <p className="text-xs text-slate-400 font-medium">
-                Município de Sátiro Dias - BA
+                Sátiro Dias & Cidades Baianas • Apuração Oficial TSE
               </p>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Status Indicator */}
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-slate-800/70 border border-slate-700/60">
+          <div className="flex items-center gap-2 sm:gap-3">
+            {/* Supabase status */}
+            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-slate-800/70 border border-slate-700/60">
               <span
                 className={`w-2 h-2 rounded-full ${
                   isSupabaseConfigured ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
                 }`}
               />
-              <span className="hidden sm:inline">
-                {isSupabaseConfigured ? "Supabase Conectado" : "Modo Demonstração"}
+              <span>
+                {isSupabaseConfigured ? "Supabase Conectado" : "Modo Local"}
               </span>
             </div>
-            
+
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all border border-slate-700 active:scale-95"
+              className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border border-slate-700"
             >
-              <LogOut className="w-4 h-4" />
+              <LogOut className="w-3.5 h-3.5" />
               <span className="hidden sm:inline">Sair</span>
             </button>
 
             <button
               onClick={() => setShowModal(true)}
-              className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white px-3.5 py-2 rounded-lg text-xs sm:text-sm font-semibold transition-all shadow-md shadow-blue-600/25 active:scale-95"
+              className="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-500 text-white px-3 sm:px-3.5 py-1.5 rounded-lg text-xs font-semibold transition-all shadow-md shadow-blue-600/25 active:scale-95"
             >
               <PlusCircle className="w-4 h-4" />
-              <span>Novo Registro</span>
+              <span>Registrar Voto</span>
             </button>
           </div>
         </div>
       </header>
 
-      {/* Main Container */}
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* KPI Cards */}
-        <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Total Votes */}
-          <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 shadow-sm relative overflow-hidden group hover:border-slate-700 transition">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Total de Votos
-              </span>
-              <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
-                <Vote className="w-5 h-5" />
-              </div>
-            </div>
-            <div className="text-3xl font-extrabold tracking-tight text-white">
-              {totalVotes.toLocaleString("pt-BR")}
-            </div>
-            <p className="text-xs text-slate-500 mt-2 flex items-center gap-1">
-              <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
-              <span>Contabilização em tempo real</span>
-            </p>
+      {/* Official TSE Live Banner Bar */}
+      <section className="bg-gradient-to-r from-red-950/70 via-slate-900 to-blue-950/70 border-b border-slate-800 px-4 sm:px-6 lg:px-8 py-2.5">
+        <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full font-extrabold text-[11px] bg-red-500/20 text-red-400 border border-red-500/40 uppercase tracking-wider">
+              <Radio className="w-3 h-3 animate-pulse" />
+              TSE AO VIVO
+            </span>
+            <span className="text-slate-300 font-medium">
+              Apuração na Bahia: <strong className="text-white font-bold">{tsePst}%</strong> das seções totalizadas
+            </span>
           </div>
 
-          {/* Communities */}
-          <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 shadow-sm relative overflow-hidden group hover:border-slate-700 transition">
-            <div className="flex items-center justify-between mb-2">
-              <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
-                Comunidades
+          <div className="flex items-center gap-3">
+            {lastTseUpdate && (
+              <span className="text-slate-400 hidden sm:inline text-[11px]">
+                Atualizado às <strong className="text-slate-200">{lastTseUpdate}</strong>
               </span>
-              <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400">
-                <MapPin className="w-5 h-5" />
-              </div>
-            </div>
-            <div className="text-3xl font-extrabold tracking-tight text-white">
-              {communities.length}
-            </div>
-            <p className="text-xs text-slate-500 mt-2 truncate">
-              Santana, Mimoso, Papagaio e outros
-            </p>
-          </div>
+            )}
 
-          {/* Candidates Cards */}
-          {candidateStats.map((cand, idx) => (
-            <div
-              key={cand.id}
-              className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 shadow-sm relative overflow-hidden group hover:border-slate-700 transition"
+            <button
+              onClick={() => setAutoRefresh(!autoRefresh)}
+              className={`px-2.5 py-1 rounded-md text-[11px] font-semibold border transition ${
+                autoRefresh
+                  ? "bg-emerald-500/20 text-emerald-300 border-emerald-500/40"
+                  : "bg-slate-800 text-slate-400 border-slate-700"
+              }`}
             >
-              <div className="flex items-center justify-between mb-2">
-                <div>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 block">
-                    {cand.position}
-                  </span>
-                  <span className="font-bold text-sm text-slate-200">{cand.name}</span>
-                </div>
-                <div
-                  className={`p-2 rounded-lg ${
-                    idx === 0
-                      ? "bg-amber-500/10 text-amber-400"
-                      : "bg-emerald-500/10 text-emerald-400"
-                  }`}
-                >
-                  <Award className="w-5 h-5" />
-                </div>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-3xl font-extrabold tracking-tight text-white">
-                  {cand.totalVotes.toLocaleString("pt-BR")}
+              {autoRefresh ? "Auto-refresh: 30s" : "Auto-refresh: Desligado"}
+            </button>
+
+            <button
+              onClick={loadTseData}
+              disabled={tseLoading}
+              title="Atualizar agora do TSE"
+              className="p-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${tseLoading ? "animate-spin text-blue-400" : ""}`} />
+            </button>
+          </div>
+        </div>
+      </section>
+
+      {/* Main Navigation Tabs */}
+      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 pt-6">
+        <div className="flex items-center gap-2 p-1.5 bg-slate-900 border border-slate-800 rounded-2xl w-full sm:w-fit overflow-x-auto">
+          <button
+            onClick={() => setActiveMainTab("bahia")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap ${
+              activeMainTab === "bahia"
+                ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
+                : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+            }`}
+          >
+            <Globe className="w-4 h-4" />
+            <span>🏛️ Bahia Geral (TSE Oficial)</span>
+          </button>
+
+          <button
+            onClick={() => setActiveMainTab("cidades")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap ${
+              activeMainTab === "cidades"
+                ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
+                : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+            }`}
+          >
+            <Building2 className="w-4 h-4" />
+            <span>🌆 Cidades da Bahia</span>
+          </button>
+
+          <button
+            onClick={() => setActiveMainTab("satiro-dias")}
+            className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs sm:text-sm transition-all whitespace-nowrap ${
+              activeMainTab === "satiro-dias"
+                ? "bg-blue-600 text-white shadow-lg shadow-blue-600/30"
+                : "text-slate-400 hover:text-white hover:bg-slate-800/60"
+            }`}
+          >
+            <MapPin className="w-4 h-4" />
+            <span>📍 Sátiro Dias (Comunidades & Fiscais)</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Main Container */}
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+        {/* ========================================================= */}
+        {/* TAB 1: BAHIA GERAL (TSE OFICIAL)                         */}
+        {/* ========================================================= */}
+        {activeMainTab === "bahia" && (
+          <div className="space-y-6">
+            {/* Cargo Filter Selector */}
+            <div className="flex flex-wrap items-center justify-between gap-4 p-4 rounded-2xl bg-slate-900/80 border border-slate-800">
+              <div className="flex items-center gap-2">
+                <span className="text-xs uppercase font-bold text-slate-400 tracking-wider">
+                  Cargo em disputa:
                 </span>
-                <span className="text-sm font-semibold text-slate-400">
-                  ({cand.percentage}%)
-                </span>
               </div>
-              <div className="w-full bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
-                <div
-                  className={`h-full rounded-full transition-all duration-500 ${
-                    idx === 0 ? "bg-amber-400" : "bg-emerald-400"
-                  }`}
-                  style={{ width: `${cand.percentage}%` }}
-                />
-              </div>
-            </div>
-          ))}
-        </section>
-
-        {/* Dynamic Dual Grid: Gráfico Estatístico + Mapa do Município */}
-        <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Gráfico de Votação */}
-          <VotingCharts
-            candidates={candidates}
-            communities={communities}
-            votes={votes}
-            selectedCommunityId={selectedCommunityId}
-            onSelectCommunity={(id) =>
-              setSelectedCommunityId(selectedCommunityId === id ? null : id)
-            }
-          />
-
-          {/* Mapa Geográfico de Sátiro Dias */}
-          <MunicipalityMap
-            communities={communities}
-            candidates={candidates}
-            votes={votes}
-            selectedCommunityId={selectedCommunityId}
-            onSelectCommunity={(id) =>
-              setSelectedCommunityId(selectedCommunityId === id ? null : id)
-            }
-            onUpdateCoordinates={handleUpdateCoordinates}
-          />
-        </section>
-
-        {/* Detailed Table & Sidebar Section */}
-        <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Detailed Table */}
-          <div className="lg:col-span-2 p-6 rounded-2xl bg-slate-900/70 border border-slate-800 shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-              <div>
-                <h2 className="text-lg font-bold text-white tracking-tight">
-                  Detalhamento por Comunidade
-                </h2>
-                <p className="text-xs text-slate-400 mt-0.5">
-                  Clique em uma linha para focar e destacar no mapa
-                </p>
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-                  <input
-                    type="text"
-                    placeholder="Buscar comunidade..."
-                    value={searchFilter}
-                    onChange={(e) => setSearchFilter(e.target.value)}
-                    className="pl-9 pr-3 py-1.5 rounded-lg bg-slate-800/80 border border-slate-700 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 transition w-44 sm:w-56"
-                  />
-                </div>
+              <div className="flex items-center gap-2">
                 <button
-                  onClick={() => setShowAddCommunityModal(true)}
-                  className="flex items-center justify-center bg-slate-800 hover:bg-slate-700 text-slate-200 p-1.5 rounded-lg border border-slate-700 transition"
-                  title="Nova Comunidade"
+                  onClick={() => setSelectedCargo("governador")}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                    selectedCargo === "governador"
+                      ? "bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20"
+                      : "bg-slate-800 text-slate-300 hover:bg-slate-750"
+                  }`}
                 >
-                  <PlusCircle className="w-4 h-4" />
+                  <Crown className="w-3.5 h-3.5" />
+                  Governador da Bahia
+                </button>
+
+                <button
+                  onClick={() => setSelectedCargo("estadual")}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                    selectedCargo === "estadual"
+                      ? "bg-amber-400 text-slate-950 shadow-md shadow-amber-400/20"
+                      : "bg-slate-800 text-slate-300 hover:bg-slate-750"
+                  }`}
+                >
+                  <Award className="w-3.5 h-3.5" />
+                  Deputado Estadual (Roberto Carlos)
+                </button>
+
+                <button
+                  onClick={() => setSelectedCargo("federal")}
+                  className={`px-3.5 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 ${
+                    selectedCargo === "federal"
+                      ? "bg-blue-500 text-white shadow-md shadow-blue-500/20"
+                      : "bg-slate-800 text-slate-300 hover:bg-slate-750"
+                  }`}
+                >
+                  <Trophy className="w-3.5 h-3.5" />
+                  Deputado Federal (Vitor Bonfim)
                 </button>
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-slate-300">
-                <thead className="bg-slate-800/60 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-700/60">
-                  <tr>
-                    <th className="px-4 py-3">Comunidade</th>
-                    <th className="px-4 py-3">Roberto Carlos (Estadual)</th>
-                    <th className="px-4 py-3">Vitor Bomfim (Federal)</th>
-                    <th className="px-4 py-3 text-right">Total Acumulado</th>
-                    <th className="px-4 py-3 w-10"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-800">
-                  {communityStats.map((comm) => {
-                    const rcVotes =
-                      comm.perCandidate.find((c) => c.name.includes("Roberto"))?.votes || 0;
-                    const vbVotes =
-                      comm.perCandidate.find((c) => c.name.includes("Vitor"))?.votes || 0;
-                    const isSelected = selectedCommunityId === comm.id;
+            {/* IF GOVERNADOR SELECTED: Top Governor Placar */}
+            {selectedCargo === "governador" && (
+              <div className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                  {/* Jerônimo */}
+                  <div className="p-5 rounded-3xl bg-slate-900/80 border border-emerald-500/30 shadow-lg relative overflow-hidden">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                        13 • PT / FE BRASIL
+                      </span>
+                      <span className="text-xs font-bold text-emerald-400">
+                        {jeronimo?.st || "2º Turno / Eleito"}
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-extrabold text-white">
+                      Jerônimo Rodrigues
+                    </h3>
+                    <div className="flex items-baseline gap-2 mt-2">
+                      <span className="text-3xl font-black text-emerald-400 font-mono">
+                        {jeronimo?.vap ? Number(jeronimo.vap).toLocaleString("pt-BR") : "4.019.830"}
+                      </span>
+                      <span className="text-sm font-bold text-slate-400">
+                        ({jeronimo?.pvap || "49,45"}%)
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-2">
+                      Votos válidos em todo o estado da Bahia
+                    </p>
+                  </div>
 
-                    return (
-                      <tr
-                        key={comm.id}
-                        onClick={() =>
-                          setSelectedCommunityId(
-                            selectedCommunityId === comm.id ? null : comm.id
-                          )
-                        }
-                        className={`cursor-pointer transition ${
-                          isSelected
-                            ? "bg-blue-600/20 text-white border-l-4 border-blue-500"
-                            : "hover:bg-slate-800/40"
-                        }`}
-                      >
-                        <td className="px-4 py-3.5 font-semibold text-slate-100 flex items-center gap-2">
-                          <MapPin
-                            className={`w-3.5 h-3.5 ${
-                              isSelected ? "text-blue-400" : "text-slate-500"
-                            }`}
-                          />
-                          <span>{comm.name}</span>
-                        </td>
-                        <td className="px-4 py-3.5 font-medium text-amber-300">
-                          {rcVotes.toLocaleString("pt-BR")}
-                        </td>
-                        <td className="px-4 py-3.5 font-medium text-emerald-300">
-                          {vbVotes.toLocaleString("pt-BR")}
-                        </td>
-                        <td className="px-4 py-3.5 font-bold text-slate-100 text-right">
-                          {comm.total.toLocaleString("pt-BR")}
-                        </td>
-                        <td className="px-4 py-3.5 text-right">
-                          <button
-                            onClick={(e) => handleDeleteCommunity(e, comm.id)}
-                            className="text-slate-500 hover:text-red-400 p-1 rounded transition"
-                            title="Excluir Comunidade"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
+                  {/* ACM Neto */}
+                  <div className="p-5 rounded-3xl bg-slate-900/80 border border-blue-500/30 shadow-lg relative overflow-hidden">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">
+                        44 • UNIÃO
+                      </span>
+                      <span className="text-xs font-bold text-blue-400">
+                        {acmNeto?.st || "2º Turno"}
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-extrabold text-white">
+                      ACM Neto
+                    </h3>
+                    <div className="flex items-baseline gap-2 mt-2">
+                      <span className="text-3xl font-black text-blue-400 font-mono">
+                        {acmNeto?.vap ? Number(acmNeto.vap).toLocaleString("pt-BR") : "3.316.711"}
+                      </span>
+                      <span className="text-sm font-bold text-slate-400">
+                        ({acmNeto?.pvap || "40,80"}%)
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-2">
+                      Votos válidos em todo o estado da Bahia
+                    </p>
+                  </div>
+
+                  {/* João Roma */}
+                  <div className="p-5 rounded-3xl bg-slate-900/80 border border-amber-500/30 shadow-lg relative overflow-hidden">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                        22 • PL
+                      </span>
+                      <span className="text-xs font-bold text-slate-400">
+                        {joaoRoma?.st || "Não eleito"}
+                      </span>
+                    </div>
+                    <h3 className="text-xl font-extrabold text-white">
+                      João Roma
+                    </h3>
+                    <div className="flex items-baseline gap-2 mt-2">
+                      <span className="text-3xl font-black text-amber-400 font-mono">
+                        {joaoRoma?.vap ? Number(joaoRoma.vap).toLocaleString("pt-BR") : "738.311"}
+                      </span>
+                      <span className="text-sm font-bold text-slate-400">
+                        ({joaoRoma?.pvap || "9,08"}%)
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-slate-400 mt-2">
+                      Votos válidos em todo o estado da Bahia
+                    </p>
+                  </div>
+                </div>
+
+                {/* Full Ranking Table for Governor */}
+                <TseCandidateRanking
+                  candidates={governorCandidates}
+                  title="Apuração Oficial para Governador da Bahia"
+                  cargoType="governador"
+                  highlightNumbers={["13", "44", "22"]}
+                  secoesApuradasPct={tsePst}
+                />
+              </div>
+            )}
+
+            {/* IF DEPUTADO ESTADUAL SELECTED */}
+            {selectedCargo === "estadual" && (
+              <div className="space-y-6">
+                {/* Highlight Card for Roberto Carlos (43333) */}
+                <div className="p-6 rounded-3xl bg-gradient-to-r from-slate-900 via-amber-950/20 to-slate-900 border-2 border-amber-400/60 shadow-xl shadow-amber-500/10 flex flex-col md:flex-row items-center justify-between gap-6">
+                  <div className="flex items-center gap-5">
+                    <div className="w-20 h-20 rounded-full border-4 border-amber-400 p-0.5 shadow-xl shadow-amber-500/30 overflow-hidden bg-slate-800 shrink-0">
+                      <img
+                        src="/imagens/roberto carlos .jpeg"
+                        alt="Roberto Carlos"
+                        className="w-full h-full object-cover rounded-full"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLElement).style.display = "none";
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-amber-400 text-slate-950">
+                          43333
+                        </span>
+                        <span className="text-xs font-bold text-amber-300 uppercase tracking-wider">
+                          Deputado Estadual • PV / FE BRASIL
+                        </span>
+                      </div>
+                      <h2 className="text-2xl sm:text-3xl font-black text-white mt-1">
+                        Roberto Carlos
+                      </h2>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                          <CheckCircle className="w-3 h-3" />
+                          {robertoCarlos?.st || "Eleito por QP"}
+                        </span>
+                        <span className="text-xs text-slate-400">
+                          Posição geral: #{robertoCarlos?.seq || "43"} na Bahia
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-center md:text-right bg-slate-950/60 p-4 rounded-2xl border border-slate-800 min-w-[220px]">
+                    <span className="text-xs uppercase font-bold text-slate-400 block mb-1">
+                      Total Oficial na Bahia (TSE)
+                    </span>
+                    <span className="text-3xl sm:text-4xl font-black text-amber-400 font-mono block">
+                      {robertoCarlos?.vap ? Number(robertoCarlos.vap).toLocaleString("pt-BR") : "57.798"}
+                    </span>
+                    <span className="text-xs text-slate-400 font-medium mt-1 block">
+                      {robertoCarlos?.pvap || "0,73"}% dos votos válidos
+                    </span>
+                  </div>
+                </div>
+
+                {/* Ranking table of all state deputies */}
+                <TseCandidateRanking
+                  candidates={tseData.estadual?.candidates || []}
+                  title="Ranking Geral de Deputados Estaduais da Bahia"
+                  cargoType="estadual"
+                  highlightNumbers={["43333"]}
+                  secoesApuradasPct={tsePst}
+                />
+              </div>
+            )}
+
+            {/* IF DEPUTADO FEDERAL SELECTED */}
+            {selectedCargo === "federal" && (
+              <div className="space-y-6">
+                {/* Highlight Card for Vitor Bonfim (4070) */}
+                <div className="p-6 rounded-3xl bg-gradient-to-r from-slate-900 via-emerald-950/20 to-slate-900 border-2 border-emerald-400/60 shadow-xl shadow-emerald-500/10 flex flex-col md:flex-row items-center justify-between gap-6">
+                  <div className="flex items-center gap-5">
+                    <div className="w-20 h-20 rounded-full border-4 border-emerald-400 p-0.5 shadow-xl shadow-emerald-500/30 overflow-hidden bg-slate-800 shrink-0">
+                      <img
+                        src="/imagens/vitor bomfim.17.jpeg"
+                        alt="Vitor Bonfim"
+                        className="w-full h-full object-cover rounded-full"
+                        onError={(e) => {
+                          (e.currentTarget as HTMLElement).style.display = "none";
+                        }}
+                      />
+                    </div>
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <span className="px-2.5 py-0.5 rounded-full text-xs font-extrabold bg-emerald-400 text-slate-950">
+                          4070
+                        </span>
+                        <span className="text-xs font-bold text-emerald-300 uppercase tracking-wider">
+                          Deputado Federal • PSB
+                        </span>
+                      </div>
+                      <h2 className="text-2xl sm:text-3xl font-black text-white mt-1">
+                        Vitor Bonfim
+                      </h2>
+                      <div className="flex items-center gap-2 mt-1">
+                        <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                          <CheckCircle className="w-3 h-3" />
+                          {vitorBonfim?.st || "Eleito por QP"}
+                        </span>
+                        <span className="text-xs text-slate-400">
+                          Posição geral: #{vitorBonfim?.seq || "25"} na Bahia
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-center md:text-right bg-slate-950/60 p-4 rounded-2xl border border-slate-800 min-w-[220px]">
+                    <span className="text-xs uppercase font-bold text-slate-400 block mb-1">
+                      Total Oficial na Bahia (TSE)
+                    </span>
+                    <span className="text-3xl sm:text-4xl font-black text-emerald-400 font-mono block">
+                      {vitorBonfim?.vap ? Number(vitorBonfim.vap).toLocaleString("pt-BR") : "68.043"}
+                    </span>
+                    <span className="text-xs text-slate-400 font-medium mt-1 block">
+                      {vitorBonfim?.pvap || "0,86"}% dos votos válidos
+                    </span>
+                  </div>
+                </div>
+
+                {/* Ranking table of all federal deputies */}
+                <TseCandidateRanking
+                  candidates={tseData.federal?.candidates || []}
+                  title="Ranking Geral de Deputados Federais da Bahia"
+                  cargoType="federal"
+                  highlightNumbers={["4070"]}
+                  secoesApuradasPct={tsePst}
+                />
+              </div>
+            )}
           </div>
+        )}
 
-          {/* System Info Sidebar */}
-          <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800 shadow-sm flex flex-col justify-between">
-            <div>
-              <h2 className="text-lg font-bold text-white tracking-tight mb-1">
-                Informações do Sistema
-              </h2>
-              <p className="text-xs text-slate-400 mb-6">
-                Parâmetros e integração de dados
-              </p>
+        {/* ========================================================= */}
+        {/* TAB 2: CIDADES DA BAHIA                                   */}
+        {/* ========================================================= */}
+        {activeMainTab === "cidades" && (
+          <div className="space-y-6">
+            <BahiaCitiesOverview />
+          </div>
+        )}
 
-              <div className="space-y-4 text-xs">
-                <div className="p-3.5 rounded-xl bg-slate-800/50 border border-slate-700/50 space-y-1.5">
-                  <div className="font-semibold text-slate-200 flex items-center gap-1.5">
-                    <Database className="w-4 h-4 text-blue-400" />
-                    Banco de Dados
+        {/* ========================================================= */}
+        {/* TAB 3: SÁTIRO DIAS (COMUNIDADES & FISCAIS)                */}
+        {/* ========================================================= */}
+        {activeMainTab === "satiro-dias" && (
+          <div className="space-y-8">
+            {/* KPI Cards */}
+            <section className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              {/* Total Votes */}
+              <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 shadow-sm relative overflow-hidden group hover:border-slate-700 transition">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Total de Votos (Sátiro Dias)
+                  </span>
+                  <div className="p-2 rounded-lg bg-blue-500/10 text-blue-400">
+                    <Vote className="w-5 h-5" />
                   </div>
-                  <p className="text-slate-400">
-                    O esquema do banco foi criado para PostgreSQL no Supabase com suporte a RLS e auditoria.
-                  </p>
+                </div>
+                <div className="text-3xl font-extrabold tracking-tight text-white">
+                  {totalVotes.toLocaleString("pt-BR")}
+                </div>
+                <p className="text-xs text-slate-500 mt-2 flex items-center gap-1">
+                  <TrendingUp className="w-3.5 h-3.5 text-emerald-400" />
+                  <span>Lançamento local dos fiscais</span>
+                </p>
+              </div>
+
+              {/* Communities */}
+              <div className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 shadow-sm relative overflow-hidden group hover:border-slate-700 transition">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
+                    Comunidades Mapeadas
+                  </span>
+                  <div className="p-2 rounded-lg bg-purple-500/10 text-purple-400">
+                    <MapPin className="w-5 h-5" />
+                  </div>
+                </div>
+                <div className="text-3xl font-extrabold tracking-tight text-white">
+                  {communities.length}
+                </div>
+                <p className="text-xs text-slate-500 mt-2 truncate">
+                  Santana, Mimoso, Papagaio e outros
+                </p>
+              </div>
+
+              {/* Candidates Cards */}
+              {candidateStats.map((cand, idx) => (
+                <div
+                  key={cand.id}
+                  className="p-5 rounded-2xl bg-slate-900/70 border border-slate-800 shadow-sm relative overflow-hidden group hover:border-slate-700 transition"
+                >
+                  <div className="flex items-center justify-between mb-2">
+                    <div>
+                      <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 block">
+                        {cand.position}
+                      </span>
+                      <span className="font-bold text-sm text-slate-200">{cand.name}</span>
+                    </div>
+                    <div
+                      className={`p-2 rounded-lg ${
+                        idx === 0
+                          ? "bg-amber-500/10 text-amber-400"
+                          : "bg-emerald-500/10 text-emerald-400"
+                      }`}
+                    >
+                      <Award className="w-5 h-5" />
+                    </div>
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <span className="text-3xl font-extrabold tracking-tight text-white">
+                      {cand.totalVotes.toLocaleString("pt-BR")}
+                    </span>
+                    <span className="text-sm font-semibold text-slate-400">
+                      ({cand.percentage}%)
+                    </span>
+                  </div>
+                  <div className="w-full bg-slate-800 h-1.5 rounded-full mt-3 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${
+                        idx === 0 ? "bg-amber-400" : "bg-emerald-400"
+                      }`}
+                      style={{ width: `${cand.percentage}%` }}
+                    />
+                  </div>
+                </div>
+              ))}
+            </section>
+
+            {/* Dual Grid: Charts + Sátiro Dias Map */}
+            <section className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <VotingCharts
+                candidates={candidates}
+                communities={communities}
+                votes={votes}
+                selectedCommunityId={selectedCommunityId}
+                onSelectCommunity={(id) =>
+                  setSelectedCommunityId(selectedCommunityId === id ? null : id)
+                }
+              />
+
+              <MunicipalityMap
+                communities={communities}
+                candidates={candidates}
+                votes={votes}
+                selectedCommunityId={selectedCommunityId}
+                onSelectCommunity={(id) =>
+                  setSelectedCommunityId(selectedCommunityId === id ? null : id)
+                }
+                onUpdateCoordinates={handleUpdateCoordinates}
+              />
+            </section>
+
+            {/* Detailed Community Table */}
+            <section className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2 p-6 rounded-2xl bg-slate-900/70 border border-slate-800 shadow-sm">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+                  <div>
+                    <h2 className="text-lg font-bold text-white tracking-tight">
+                      Detalhamento por Comunidade em Sátiro Dias
+                    </h2>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      Clique em uma linha para focar e destacar no mapa
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-3">
+                    <div className="relative">
+                      <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
+                      <input
+                        type="text"
+                        placeholder="Buscar comunidade..."
+                        value={searchFilter}
+                        onChange={(e) => setSearchFilter(e.target.value)}
+                        className="bg-slate-800/80 border border-slate-700/80 rounded-lg pl-9 pr-4 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-blue-500 w-48 sm:w-60"
+                      />
+                    </div>
+                    <button
+                      onClick={() => setShowAddCommunityModal(true)}
+                      className="flex items-center gap-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-700 transition"
+                    >
+                      <PlusCircle className="w-3.5 h-3.5" />
+                      <span>Comunidade</span>
+                    </button>
+                  </div>
                 </div>
 
-                <div className="p-3.5 rounded-xl bg-slate-800/50 border border-slate-700/50 space-y-1.5">
-                  <div className="font-semibold text-slate-200 flex items-center gap-1.5">
-                    <Users className="w-4 h-4 text-indigo-400" />
-                    Cargos & Candidatos
-                  </div>
-                  <ul className="list-disc list-inside text-slate-400 space-y-1">
-                    <li>Roberto Carlos (Estadual)</li>
-                    <li>Vitor Bomfim (Federal)</li>
-                  </ul>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-slate-800/50 border border-slate-700/50 space-y-1.5">
-                  <div className="font-semibold text-slate-200 flex items-center gap-1.5">
-                    <MapPin className="w-4 h-4 text-emerald-400" />
-                    Localidades Registradas
-                  </div>
-                  <p className="text-slate-400">
-                    {communities.length} polos principais de Sátiro Dias com geolocalização cadastrada.
-                  </p>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-left text-xs">
+                    <thead className="bg-slate-800/50 text-slate-400 uppercase text-[10px] tracking-wider border-b border-slate-800">
+                      <tr>
+                        <th className="py-3 px-4">Comunidade</th>
+                        {candidates.map((c) => (
+                          <th key={c.id} className="py-3 px-4 text-right">
+                            {c.name}
+                          </th>
+                        ))}
+                        <th className="py-3 px-4 text-right">Total Votos</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-800/60">
+                      {communityStats.length === 0 ? (
+                        <tr>
+                          <td
+                            colSpan={candidates.length + 2}
+                            className="py-8 text-center text-slate-500 italic"
+                          >
+                            Nenhuma comunidade cadastrada.
+                          </td>
+                        </tr>
+                      ) : (
+                        communityStats.map((comm) => (
+                          <tr
+                            key={comm.id}
+                            onClick={() =>
+                              setSelectedCommunityId(
+                                selectedCommunityId === comm.id ? null : comm.id
+                              )
+                            }
+                            className={`cursor-pointer transition-colors ${
+                              selectedCommunityId === comm.id
+                                ? "bg-blue-600/20 hover:bg-blue-600/25"
+                                : "hover:bg-slate-800/40"
+                            }`}
+                          >
+                            <td className="py-3 px-4 font-semibold text-slate-200">
+                              {comm.name}
+                            </td>
+                            {comm.perCandidate.map((pc) => (
+                              <td
+                                key={pc.candidateId}
+                                className="py-3 px-4 text-right text-slate-300 font-mono"
+                              >
+                                {pc.votes.toLocaleString("pt-BR")}
+                              </td>
+                            ))}
+                            <td className="py-3 px-4 text-right font-bold text-white font-mono">
+                              {comm.total.toLocaleString("pt-BR")}
+                            </td>
+                          </tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
                 </div>
               </div>
-            </div>
 
-            <div className="mt-6 pt-4 border-t border-slate-800/80">
-              <button
-                onClick={loadData}
-                disabled={loading}
-                className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 font-semibold text-xs transition border border-slate-700 active:scale-95"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${loading ? "animate-spin" : ""}`} />
-                <span>Atualizar Dados</span>
-              </button>
-            </div>
+              {/* History / Records Feed */}
+              <div className="p-6 rounded-2xl bg-slate-900/70 border border-slate-800 shadow-sm flex flex-col">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-sm font-bold text-white tracking-tight">
+                    Últimos Registros
+                  </h3>
+                  <span className="text-[11px] text-slate-500 font-medium">
+                    {votes.length} lançamentos
+                  </span>
+                </div>
+
+                <div className="flex-1 overflow-y-auto max-h-[350px] space-y-2 pr-1">
+                  {votes.length === 0 ? (
+                    <div className="h-full flex items-center justify-center text-slate-500 text-xs italic py-8">
+                      Nenhum voto lançado ainda.
+                    </div>
+                  ) : (
+                    [...votes].reverse().slice(0, 15).map((v) => {
+                      const comm = communities.find((c) => c.id === v.community_id);
+                      const cand = candidates.find((c) => c.id === v.candidate_id);
+                      return (
+                        <div
+                          key={v.id}
+                          className="p-3 rounded-xl bg-slate-800/40 border border-slate-800 flex items-center justify-between text-xs"
+                        >
+                          <div>
+                            <span className="font-semibold text-slate-200 block">
+                              {comm?.name || "Comunidade"}
+                            </span>
+                            <span className="text-[11px] text-slate-400">
+                              {cand?.name || "Candidato"}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <span className="font-mono font-bold text-white bg-slate-800 px-2 py-0.5 rounded">
+                              +{v.votes}
+                            </span>
+                            <button
+                              onClick={() => handleDeleteVote(v.id)}
+                              className="text-slate-500 hover:text-red-400 transition"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                            </button>
+                          </div>
+                        </div>
+                      );
+                    })
+                  )}
+                </div>
+              </div>
+            </section>
           </div>
-        </section>
+        )}
       </main>
 
-      {/* Add Vote Modal */}
+      {/* New Vote Modal */}
       {showModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
             <h3 className="text-lg font-bold text-white mb-1">
-              Lançar Novo Voto
+              Lançar Votos
             </h3>
             <p className="text-xs text-slate-400 mb-6">
-              Informe os dados da localidade e a quantidade de votos obtida
+              Registre a apuração de uma comunidade específica.
             </p>
 
             <form onSubmit={handleAddVote} className="space-y-4 text-xs">

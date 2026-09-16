@@ -674,25 +674,18 @@ const CANDIDATES_2026_GOVERNOR: TseCandidate[] = [
   { seq: "3", sqcand: "2026-gov-3", n: "50", nm: "RONALDO MANSUR", cc: "PSOL / REDE", nv: "MARCOS MENDES", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
 ];
 
-const CANDIDATES_2026_ESTADUAL: TseCandidate[] = [
-  { seq: "1", sqcand: "2026-est-rc", n: "43333", nm: "ROBERTO CARLOS", cc: "PV - Federação Brasil da Esperança (PT/PC do B/PV)", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
-  { seq: "2", sqcand: "2026-est-2", n: "13123", nm: "ROSEMBERG PINTO", cc: "PT", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
-  { seq: "3", sqcand: "2026-est-3", n: "44111", nm: "IVANILSON GOMES", cc: "UNIÃO", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
-  { seq: "4", sqcand: "2026-est-4", n: "55123", nm: "EDUARDO SALLES", cc: "PP", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
-  { seq: "5", sqcand: "2026-est-5", n: "40123", nm: "MARQUINHO VIANA", cc: "PV", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
-  { seq: "6", sqcand: "2026-est-6", n: "15123", nm: "LUCIA ROCHA", cc: "MDB", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
-  { seq: "7", sqcand: "2026-est-7", n: "10123", nm: "JURANDY OLIVEIRA", cc: "REPUBLICANOS", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
-  { seq: "8", sqcand: "2026-est-8", n: "22123", nm: "VITOR AZEVEDO", cc: "PL", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
-];
-
-const CANDIDATES_2026_FEDERAL: TseCandidate[] = [
-  { seq: "1", sqcand: "2026-fed-vb", n: "4070", nm: "VITOR BONFIM", cc: "PSB", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
-  { seq: "2", sqcand: "2026-fed-2", n: "4422", nm: "OTTO ALENCAR FILHO", cc: "PSD", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
-  { seq: "3", sqcand: "2026-fed-3", n: "1122", nm: "CLAUDIO CAJADO", cc: "PP", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
-  { seq: "4", sqcand: "2026-fed-4", n: "1313", nm: "JORGE SOLLA", cc: "PT", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
-  { seq: "5", sqcand: "2026-fed-5", n: "2288", nm: "JOÃO CARLOS BACELAR", cc: "PL", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
-  { seq: "6", sqcand: "2026-fed-6", n: "1000", nm: "ROGERIA SANTOS", cc: "REPUBLICANOS", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
-];
+export {
+  CANDIDATES_2026_ESTADUAL,
+  CANDIDATES_2026_FEDERAL,
+  CANDIDATES_2022_ESTADUAL,
+  CANDIDATES_2022_FEDERAL,
+} from "./deputiesData";
+import {
+  CANDIDATES_2026_ESTADUAL,
+  CANDIDATES_2026_FEDERAL,
+  CANDIDATES_2022_ESTADUAL,
+  CANDIDATES_2022_FEDERAL,
+} from "./deputiesData";
 
 // Helper to fetch TSE data for President, Governor, Federal, or State Deputy
 export async function fetchTseData(
@@ -862,9 +855,57 @@ export async function fetchTseData(
       };
     }
   } catch {
-    // Fallback
+    // Fallback if offline
   }
 
+  return get2022FallbackData(cargoCode, uf);
+}
+
+function get2022FallbackData(cargoCode: "1" | "3" | "6" | "7", uf: "br" | "ba" = "ba"): TseElectionData {
+  if (cargoCode === "7") {
+    return {
+      ano: "2022",
+      cargo: "estadual",
+      carper: "7",
+      uf: "BA",
+      pst: "100,00",
+      s: "34424",
+      st: "34424",
+      e: "11273819",
+      c: "8866459",
+      pc: "78,65",
+      a: "2407360",
+      pa: "21,35",
+      tv: "8866459",
+      vnom: "8129042",
+      vl: "0",
+      dg: "02/10/2022",
+      hg: "23:58:00",
+      candidates: CANDIDATES_2022_ESTADUAL,
+    };
+  }
+  if (cargoCode === "6") {
+    return {
+      ano: "2022",
+      cargo: "federal",
+      carper: "6",
+      uf: "BA",
+      pst: "100,00",
+      s: "34424",
+      st: "34424",
+      e: "11273819",
+      c: "8866459",
+      pc: "78,65",
+      a: "2407360",
+      pa: "21,35",
+      tv: "8866459",
+      vnom: "8129042",
+      vl: "0",
+      dg: "02/10/2022",
+      hg: "23:58:00",
+      candidates: CANDIDATES_2022_FEDERAL,
+    };
+  }
   return get2026Data(cargoCode, uf);
 }
 

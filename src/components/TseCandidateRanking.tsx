@@ -24,7 +24,7 @@ export default function TseCandidateRanking({
   const [search, setSearch] = useState("");
   const [onlyElected, setOnlyElected] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 12;
+  const itemsPerPage = 15;
 
   // Filter and sort candidates by votes descending
   const filteredCandidates = useMemo(() => {
@@ -41,8 +41,12 @@ export default function TseCandidateRanking({
       );
     }
 
-    // Sort by votes descending so #1 is the most voted candidate
-    return list.sort((a, b) => (Number(b.vap) || 0) - (Number(a.vap) || 0));
+    // Sort by votes descending, or by sequence if votes are 0 (e.g. in 2026)
+    return list.sort((a, b) => {
+      const diffVotes = (Number(b.vap) || 0) - (Number(a.vap) || 0);
+      if (diffVotes !== 0) return diffVotes;
+      return (Number(a.seq) || 0) - (Number(b.seq) || 0);
+    });
   }, [candidates, search, onlyElected]);
 
   const totalPages = Math.ceil(filteredCandidates.length / itemsPerPage) || 1;
@@ -53,6 +57,14 @@ export default function TseCandidateRanking({
 
   const getStatusBadge = (cand: TseCandidate) => {
     const st = cand.st.toLowerCase();
+    if (st.includes("aguardando")) {
+      return (
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-blue-500/15 text-blue-400 border border-blue-500/30">
+          <Clock className="w-3 h-3" />
+          Aguardando apuração
+        </span>
+      );
+    }
     if (cand.e === "s" || st.includes("eleito")) {
       return (
         <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-500/15 text-emerald-400 border border-emerald-500/30">
@@ -71,7 +83,7 @@ export default function TseCandidateRanking({
     }
     if (st.includes("suplente")) {
       return (
-        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
+        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-500/15 text-purple-300 border border-purple-500/30">
           Suplente
         </span>
       );

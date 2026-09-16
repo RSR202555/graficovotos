@@ -26,9 +26,9 @@ export default function TseCandidateRanking({
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 12;
 
-  // Filter candidates
+  // Filter and sort candidates by votes descending
   const filteredCandidates = useMemo(() => {
-    let list = candidates;
+    let list = [...candidates];
 
     if (onlyElected) {
       list = list.filter((c) => c.e === "s" || c.st.toLowerCase().includes("eleito") || c.st.toLowerCase().includes("2º"));
@@ -41,7 +41,8 @@ export default function TseCandidateRanking({
       );
     }
 
-    return list;
+    // Sort by votes descending so #1 is the most voted candidate
+    return list.sort((a, b) => (Number(b.vap) || 0) - (Number(a.vap) || 0));
   }, [candidates, search, onlyElected]);
 
   const totalPages = Math.ceil(filteredCandidates.length / itemsPerPage) || 1;

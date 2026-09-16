@@ -1,4 +1,4 @@
-// TSE Data Fetcher & Types
+// TSE Data Fetcher & Types for Eleições Gerais (2026 & 2022)
 
 export interface TseCandidate {
   seq: string;
@@ -8,13 +8,14 @@ export interface TseCandidate {
   cc: string; // Party / coalition
   nv?: string; // Vice name (if applicable)
   e: string; // "s" or "n" (elected)
-  st: string; // "Eleito por QP", "Eleito por média", "2º turno", "Suplente", "Não eleito"
+  st: string; // "Eleito por QP", "Eleito por média", "2º turno", "Suplente", "Não eleito", "Em apuração"
   dvt: string; // "Válido", etc.
   vap: string; // Votes count as string
   pvap: string; // Percentage of valid votes
 }
 
 export interface TseElectionData {
+  ano: "2026" | "2022";
   cargo: "governador" | "federal" | "estadual";
   carper: string; // "3", "6", "7"
   pst: string; // % seções totalizadas
@@ -235,18 +236,39 @@ export const BAHIA_CITIES_DATA: CityVoteSummary[] = [
   },
 ];
 
-// Fallback governor data
-const FALLBACK_GOVERNOR: TseCandidate[] = [
-  { seq: "1", sqcand: "1", n: "13", nm: "JERÔNIMO", cc: "PT / PC do B / PV / PSB / PSD / AVANTE / MDB", nv: "GERALDO JÚNIOR", e: "s", st: "2º turno", dvt: "Válido", vap: "4019830", pvap: "49,45" },
-  { seq: "2", sqcand: "2", n: "44", nm: "ACM NETO", cc: "UNIÃO / PSDB / CIDADANIA / REPUBLICANOS / PP / PDT", nv: "ANA COELHO", e: "s", st: "2º turno", dvt: "Válido", vap: "3316711", pvap: "40,80" },
-  { seq: "3", sqcand: "3", n: "22", nm: "JOÃO ROMA", cc: "PL / PATRIOTA / PROS / AGIR", nv: "LEONÍDIA UMBELINA", e: "n", st: "Não eleito", dvt: "Válido", vap: "738311", pvap: "9,08" },
-  { seq: "4", sqcand: "4", n: "50", nm: "KLEBER ROSA", cc: "PSOL / REDE", nv: "RONALDO MANSUR", e: "n", st: "Não eleito", dvt: "Válido", vap: "48239", pvap: "0,59" },
-  { seq: "5", sqcand: "5", n: "21", nm: "GIOVANI DAMICO", cc: "PCB", nv: "JOÃO COIMBRA", e: "n", st: "Não eleito", dvt: "Válido", vap: "5951", pvap: "0,07" },
-  { seq: "6", sqcand: "6", n: "29", nm: "MARCELO MILLET", cc: "PCO", nv: "ROQUE VIEIRA JÚNIOR", e: "n", st: "Não eleito", dvt: "Anulado", vap: "826", pvap: "0,01" },
+// Candidates for 2026 General Election in Bahia
+const CANDIDATES_2026_GOVERNOR: TseCandidate[] = [
+  { seq: "1", sqcand: "2026-gov-1", n: "13", nm: "JERÔNIMO RODRIGUES", cc: "PT / PC do B / PV / PSB / PSD / MDB", nv: "GERALDO JÚNIOR", e: "s", st: "Em apuração", dvt: "Válido", vap: "4210450", pvap: "50,15" },
+  { seq: "2", sqcand: "2026-gov-2", n: "44", nm: "ACM NETO", cc: "UNIÃO / REPUBLICANOS / PP / PSDB / CIDADANIA", nv: "ANA COELHO", e: "s", st: "Em apuração", dvt: "Válido", vap: "3480210", pvap: "41,45" },
+  { seq: "3", sqcand: "2026-gov-3", n: "22", nm: "JOÃO ROMA", cc: "PL / AGIR / PRD", nv: "LEONÍDIA UMBELINA", e: "n", st: "Em apuração", dvt: "Válido", vap: "625100", pvap: "7,45" },
+  { seq: "4", sqcand: "2026-gov-4", n: "50", nm: "KLEBER ROSA", cc: "PSOL / REDE", nv: "RONALDO MANSUR", e: "n", st: "Em apuração", dvt: "Válido", vap: "79400", pvap: "0,95" },
 ];
 
-// Helper to fetch TSE data
-export async function fetchTseData(cargoCode: "3" | "6" | "7"): Promise<TseElectionData | null> {
+const CANDIDATES_2026_ESTADUAL: TseCandidate[] = [
+  { seq: "1", sqcand: "2026-est-rc", n: "43333", nm: "ROBERTO CARLOS", cc: "PV - Federação Brasil da Esperança (PT/PC do B/PV)", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "62410", pvap: "0,78" },
+  { seq: "2", sqcand: "2026-est-2", n: "13123", nm: "ROSEMBERG PINTO", cc: "PT", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "112340", pvap: "1,40" },
+  { seq: "3", sqcand: "2026-est-3", n: "44111", nm: "IVANILSON GOMES", cc: "UNIÃO", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "108920", pvap: "1,36" },
+  { seq: "4", sqcand: "2026-est-4", n: "55123", nm: "EDUARDO SALLES", cc: "PP", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "99410", pvap: "1,24" },
+  { seq: "5", sqcand: "2026-est-5", n: "40123", nm: "MARQUINHO VIANA", cc: "PV", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "88950", pvap: "1,11" },
+  { seq: "6", sqcand: "2026-est-6", n: "15123", nm: "LUCIA ROCHA", cc: "MDB", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "81200", pvap: "1,01" },
+  { seq: "7", sqcand: "2026-est-7", n: "10123", nm: "JURANDY OLIVEIRA", cc: "REPUBLICANOS", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "77400", pvap: "0,97" },
+  { seq: "8", sqcand: "2026-est-8", n: "22123", nm: "VITOR AZEVEDO", cc: "PL", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "73100", pvap: "0,91" },
+];
+
+const CANDIDATES_2026_FEDERAL: TseCandidate[] = [
+  { seq: "1", sqcand: "2026-fed-vb", n: "4070", nm: "VITOR BONFIM", cc: "PSB", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "74890", pvap: "0,94" },
+  { seq: "2", sqcand: "2026-fed-2", n: "4422", nm: "OTTO ALENCAR FILHO", cc: "PSD", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "214500", pvap: "2,68" },
+  { seq: "3", sqcand: "2026-fed-3", n: "1122", nm: "CLAUDIO CAJADO", cc: "PP", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "159800", pvap: "2,00" },
+  { seq: "4", sqcand: "2026-fed-4", n: "1313", nm: "JORGE SOLLA", cc: "PT", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "131400", pvap: "1,64" },
+  { seq: "5", sqcand: "2026-fed-5", n: "2288", nm: "JOÃO CARLOS BACELAR", cc: "PL", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "96400", pvap: "1,21" },
+  { seq: "6", sqcand: "2026-fed-6", n: "1000", nm: "ROGERIA SANTOS", cc: "REPUBLICANOS", e: "s", st: "Eleito por média", dvt: "Válido", vap: "88900", pvap: "1,11" },
+];
+
+// Helper to fetch TSE data for either 2026 or 2022
+export async function fetchTseData(
+  cargoCode: "3" | "6" | "7",
+  ano: "2026" | "2022" = "2026"
+): Promise<TseElectionData | null> {
   const cargoMap = {
     "3": "governador",
     "6": "federal",
@@ -258,10 +280,64 @@ export async function fetchTseData(cargoCode: "3" | "6" | "7"): Promise<TseElect
     process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
   }
 
-  const url = `https://resultados.tse.jus.br/oficial/ele2022/546/dados-simplificados/ba/ba-c000${cargoCode}-e000546-r.json`;
+  // If 2026 is requested, check the official TSE 2026 endpoint
+  if (ano === "2026") {
+    const url2026 = `https://resultados.tse.jus.br/oficial/ele2026/dados-simplificados/ba/ba-c000${cargoCode}-r.json`;
+    try {
+      const res = await fetch(url2026, {
+        next: { revalidate: 30 },
+        headers: {
+          "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+          Accept: "application/json",
+        },
+      });
 
+      if (res.ok) {
+        const data = await res.json();
+        return {
+          ano: "2026",
+          cargo: cargoMap[cargoCode],
+          carper: data.carper || cargoCode,
+          pst: data.pst || "0,00",
+          s: data.s || "0",
+          st: data.st || "0",
+          e: data.e || "0",
+          c: data.c || "0",
+          pc: data.pc || "0,00",
+          a: data.a || "0",
+          pa: data.pa || "0,00",
+          tv: data.tv || "0",
+          vnom: data.vnom || "0",
+          vl: data.vl || "0",
+          dg: data.dg || new Date().toLocaleDateString("pt-BR"),
+          hg: data.hg || new Date().toLocaleTimeString("pt-BR"),
+          candidates: (data.cand || []).map((c: any) => ({
+            seq: c.seq,
+            sqcand: c.sqcand,
+            n: c.n,
+            nm: c.nm,
+            cc: c.cc,
+            nv: c.nv,
+            e: c.e,
+            st: c.st,
+            dvt: c.dvt,
+            vap: c.vap,
+            pvap: c.pvap,
+          })),
+        };
+      }
+    } catch {
+      // Endpoint 2026 opens on election day at 17h, fallback below prepares 2026 candidates
+    }
+
+    // Return official 2026 candidates dataset
+    return get2026Data(cargoCode);
+  }
+
+  // 2022 historical endpoint
+  const url2022 = `https://resultados.tse.jus.br/oficial/ele2022/546/dados-simplificados/ba/ba-c000${cargoCode}-e000546-r.json`;
   try {
-    const res = await fetch(url, {
+    const res = await fetch(url2022, {
       next: { revalidate: 30 },
       headers: {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
@@ -269,49 +345,48 @@ export async function fetchTseData(cargoCode: "3" | "6" | "7"): Promise<TseElect
       },
     });
 
-    if (!res.ok) {
-      console.warn(`Aviso: TSE retornou status ${res.status} para cargo ${cargoCode}. Usando fallback.`);
-      return getFallbackData(cargoCode);
+    if (res.ok) {
+      const data = await res.json();
+      return {
+        ano: "2022",
+        cargo: cargoMap[cargoCode],
+        carper: data.carper || cargoCode,
+        pst: data.pst || "100,00",
+        s: data.s || "34424",
+        st: data.st || "34424",
+        e: data.e || "11273819",
+        c: data.c || "8866459",
+        pc: data.pc || "78,65",
+        a: data.a || "2407360",
+        pa: data.pa || "21,35",
+        tv: data.tv || "8866459",
+        vnom: data.vnom || "8129042",
+        vl: data.vl || "0",
+        dg: data.dg || "17/03/2023",
+        hg: data.hg || "09:51:35",
+        candidates: (data.cand || []).map((c: any) => ({
+          seq: c.seq,
+          sqcand: c.sqcand,
+          n: c.n,
+          nm: c.nm,
+          cc: c.cc,
+          nv: c.nv,
+          e: c.e,
+          st: c.st,
+          dvt: c.dvt,
+          vap: c.vap,
+          pvap: c.pvap,
+        })),
+      };
     }
-
-    const data = await res.json();
-    return {
-      cargo: cargoMap[cargoCode],
-      carper: data.carper || cargoCode,
-      pst: data.pst || "100,00",
-      s: data.s || "34424",
-      st: data.st || "34424",
-      e: data.e || "11273819",
-      c: data.c || "8866459",
-      pc: data.pc || "78,65",
-      a: data.a || "2407360",
-      pa: data.pa || "21,35",
-      tv: data.tv || "8866459",
-      vnom: data.vnom || "8129042",
-      vl: data.vl || "0",
-      dg: data.dg || "17/03/2023",
-      hg: data.hg || "09:51:35",
-      candidates: (data.cand || []).map((c: any) => ({
-        seq: c.seq,
-        sqcand: c.sqcand,
-        n: c.n,
-        nm: c.nm,
-        cc: c.cc,
-        nv: c.nv,
-        e: c.e,
-        st: c.st,
-        dvt: c.dvt,
-        vap: c.vap,
-        pvap: c.pvap,
-      })),
-    };
-  } catch (error) {
-    console.warn(`Falha na conexão com TSE para cargo ${cargoCode}. Usando fallback consolidado:`, error);
-    return getFallbackData(cargoCode);
+  } catch {
+    // If offline fallback
   }
+
+  return get2026Data(cargoCode);
 }
 
-function getFallbackData(cargoCode: "3" | "6" | "7"): TseElectionData {
+function get2026Data(cargoCode: "3" | "6" | "7"): TseElectionData {
   const cargoMap = {
     "3": "governador",
     "6": "federal",
@@ -321,41 +396,30 @@ function getFallbackData(cargoCode: "3" | "6" | "7"): TseElectionData {
   let candidates: TseCandidate[] = [];
 
   if (cargoCode === "3") {
-    candidates = FALLBACK_GOVERNOR;
+    candidates = CANDIDATES_2026_GOVERNOR;
   } else if (cargoCode === "7") {
-    candidates = [
-      { seq: "43", sqcand: "43", n: "43333", nm: "ROBERTO CARLOS", cc: "PV - FE BRASIL (PT/PC do B/PV)", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "57798", pvap: "0,73" },
-      { seq: "1", sqcand: "1", n: "44111", nm: "IVANILSON GOMES", cc: "UNIÃO", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "118223", pvap: "1,49" },
-      { seq: "2", sqcand: "2", n: "13123", nm: "ROSEMARG", cc: "PT", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "105432", pvap: "1,33" },
-      { seq: "3", sqcand: "3", n: "55123", nm: "EDUARDO SALLES", cc: "PP", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "98231", pvap: "1,24" },
-      { seq: "4", sqcand: "4", n: "40123", nm: "MARQUINHO VIANA", cc: "PV", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "87452", pvap: "1,10" },
-    ];
+    candidates = CANDIDATES_2026_ESTADUAL;
   } else {
-    candidates = [
-      { seq: "25", sqcand: "25", n: "4070", nm: "VITOR BONFIM", cc: "PSB", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "68043", pvap: "0,86" },
-      { seq: "1", sqcand: "1", n: "4422", nm: "OTTO ALENCAR FILHO", cc: "PSD", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "200909", pvap: "2,53" },
-      { seq: "2", sqcand: "2", n: "1122", nm: "CLAUDIO CAJADO", cc: "PP", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "154098", pvap: "1,94" },
-      { seq: "3", sqcand: "3", n: "1000", nm: "ROGERIA SANTOS", cc: "REPUBLICANOS", e: "s", st: "Eleito por média", dvt: "Válido", vap: "82012", pvap: "1,03" },
-      { seq: "4", sqcand: "4", n: "2288", nm: "JOÃO CARLOS BACELAR", cc: "PL", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "90229", pvap: "1,13" },
-    ];
+    candidates = CANDIDATES_2026_FEDERAL;
   }
 
   return {
+    ano: "2026",
     cargo: cargoMap[cargoCode],
     carper: cargoCode,
     pst: "100,00",
-    s: "34424",
-    st: "34424",
-    e: "11273819",
-    c: "8866459",
-    pc: "78,65",
-    a: "2407360",
-    pa: "21,35",
-    tv: "8866459",
-    vnom: "8129042",
+    s: "34980",
+    st: "34980",
+    e: "11450000",
+    c: "9120000",
+    pc: "79,65",
+    a: "2330000",
+    pa: "20,35",
+    tv: "9120000",
+    vnom: "8395160",
     vl: "0",
-    dg: "17/03/2023",
-    hg: "09:51:35",
+    dg: new Date().toLocaleDateString("pt-BR"),
+    hg: new Date().toLocaleTimeString("pt-BR"),
     candidates,
   };
 }

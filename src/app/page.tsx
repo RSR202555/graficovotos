@@ -65,6 +65,7 @@ export default function Home() {
   const [newCommunityLng, setNewCommunityLng] = useState("");
 
   // TSE Live Data States
+  const [electionYear, setElectionYear] = useState<"2026" | "2022">("2026");
   const [activeMainTab, setActiveMainTab] = useState<"bahia" | "cidades" | "satiro-dias">("bahia");
   const [selectedCargo, setSelectedCargo] = useState<"governador" | "estadual" | "federal">("governador");
   const [tseLoading, setTseLoading] = useState(false);
@@ -123,10 +124,11 @@ export default function Home() {
   };
 
   // Fetch TSE official results
-  const loadTseData = useCallback(async () => {
+  const loadTseData = useCallback(async (ano?: "2026" | "2022") => {
+    const anoToFetch = ano || electionYear;
     try {
       setTseLoading(true);
-      const res = await fetch("/api/tse");
+      const res = await fetch(`/api/tse?ano=${anoToFetch}`);
       if (res.ok) {
         const json = await res.json();
         if (json.success) {
@@ -145,23 +147,23 @@ export default function Home() {
     } finally {
       setTseLoading(false);
     }
-  }, []);
+  }, [electionYear]);
 
   useEffect(() => {
     if (isSupabaseConfigured) {
       loadData();
     }
-    loadTseData();
-  }, [loadTseData]);
+    loadTseData(electionYear);
+  }, [electionYear, loadTseData]);
 
   // Polling for TSE real-time
   useEffect(() => {
     if (!autoRefresh) return;
     const interval = setInterval(() => {
-      loadTseData();
+      loadTseData(electionYear);
     }, 30000);
     return () => clearInterval(interval);
-  }, [autoRefresh, loadTseData]);
+  }, [autoRefresh, electionYear, loadTseData]);
 
   // Compute metrics for local Sátiro Dias
   const totalVotes = useMemo(() => {
@@ -362,9 +364,14 @@ export default function Home() {
               <Vote className="w-5 h-5 text-white" />
             </div>
             <div>
-              <h1 className="font-bold text-base sm:text-lg leading-tight tracking-tight">
-                Painel Eleitoral da Bahia
-              </h1>
+              <div className="flex items-center gap-2">
+                <h1 className="font-bold text-base sm:text-lg leading-tight tracking-tight text-white">
+                  Painel Eleitoral da Bahia
+                </h1>
+                <span className="px-2 py-0.5 rounded-md text-[11px] font-black bg-amber-400 text-slate-950">
+                  {electionYear}
+                </span>
+              </div>
               <p className="text-xs text-slate-400 font-medium">
                 Sátiro Dias & Cidades Baianas • Apuração Oficial TSE
               </p>
@@ -372,16 +379,34 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3">
-            {/* Supabase status */}
-            <div className="hidden md:flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium bg-slate-800/70 border border-slate-700/60">
-              <span
-                className={`w-2 h-2 rounded-full ${
-                  isSupabaseConfigured ? "bg-emerald-400 animate-pulse" : "bg-amber-400"
+            {/* Year Selector */}
+            <div className="flex items-center bg-slate-800/90 border border-slate-700/80 p-0.5 rounded-xl text-xs font-bold">
+              <button
+                onClick={() => {
+                  setElectionYear("2026");
+                  loadTseData("2026");
+                }}
+                className={`px-3 py-1.5 rounded-lg transition ${
+                  electionYear === "2026"
+                    ? "bg-amber-400 text-slate-950 shadow-sm"
+                    : "text-slate-400 hover:text-slate-200"
                 }`}
-              />
-              <span>
-                {isSupabaseConfigured ? "Supabase Conectado" : "Modo Local"}
-              </span>
+              >
+                🗳️ 2026 (Atual)
+              </button>
+              <button
+                onClick={() => {
+                  setElectionYear("2022");
+                  loadTseData("2022");
+                }}
+                className={`px-3 py-1.5 rounded-lg transition ${
+                  electionYear === "2022"
+                    ? "bg-blue-600 text-white shadow-sm"
+                    : "text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                📜 2022 (Histórico)
+              </button>
             </div>
 
             <button
@@ -412,7 +437,7 @@ export default function Home() {
               TSE AO VIVO
             </span>
             <span className="text-slate-300 font-medium">
-              Apuração na Bahia: <strong className="text-white font-bold">{tsePst}%</strong> das seções totalizadas
+              Apuração {electionYear} na Bahia: <strong className="text-white font-bold">{tsePst}%</strong> das seções totalizadas
             </span>
           </div>
 
@@ -435,7 +460,7 @@ export default function Home() {
             </button>
 
             <button
-              onClick={loadTseData}
+              onClick={() => loadTseData(electionYear)}
               disabled={tseLoading}
               title="Atualizar agora do TSE"
               className="p-1.5 rounded-md bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"

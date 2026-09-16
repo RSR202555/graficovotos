@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { CityVoteSummary, BAHIA_CITIES_DATA } from "@/lib/tse";
-import { MapPin, Search, Award, TrendingUp, Building2, ChevronRight } from "lucide-react";
+import { MapPin, Search, Award, TrendingUp, Building2, ChevronRight, Clock } from "lucide-react";
 
 interface BahiaCitiesOverviewProps {
   electionYear?: "2026" | "2022";
@@ -14,16 +14,39 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
     BAHIA_CITIES_DATA.find((c) => c.isSatiroDias) || BAHIA_CITIES_DATA[0]
   );
 
+  const is2026 = electionYear === "2026";
+
   const filteredCities = BAHIA_CITIES_DATA.filter((c) =>
     c.city.toLowerCase().includes(search.toLowerCase().trim())
   );
 
-  const jeronimoPct = ((selectedCity.governor.jeronimo / selectedCity.totalVotes) * 100).toFixed(1);
-  const acmNetoPct = ((selectedCity.governor.acmNeto / selectedCity.totalVotes) * 100).toFixed(1);
-  const joaoRomaPct = ((selectedCity.governor.joaoRoma / selectedCity.totalVotes) * 100).toFixed(1);
+  // For 2026, the election has not happened yet: zero out votes
+  const totalVotesDisplay = is2026 ? 0 : selectedCity.totalVotes;
 
-  const rcPct = ((selectedCity.deputies.robertoCarlos / selectedCity.totalVotes) * 100).toFixed(1);
-  const vbPct = ((selectedCity.deputies.vitorBonfim / selectedCity.totalVotes) * 100).toFixed(1);
+  const jeronimoVotes = is2026 ? 0 : selectedCity.governor.jeronimo;
+  const jeronimoPct = is2026
+    ? "0,0"
+    : ((selectedCity.governor.jeronimo / selectedCity.totalVotes) * 100).toFixed(1);
+
+  const acmNetoVotes = is2026 ? 0 : selectedCity.governor.acmNeto;
+  const acmNetoPct = is2026
+    ? "0,0"
+    : ((selectedCity.governor.acmNeto / selectedCity.totalVotes) * 100).toFixed(1);
+
+  const joaoRomaVotes = is2026 ? 0 : selectedCity.governor.joaoRoma;
+  const joaoRomaPct = is2026
+    ? "0,0"
+    : ((selectedCity.governor.joaoRoma / selectedCity.totalVotes) * 100).toFixed(1);
+
+  const rcVotes = is2026 ? 0 : selectedCity.deputies.robertoCarlos;
+  const rcPct = is2026
+    ? "0,0"
+    : ((selectedCity.deputies.robertoCarlos / selectedCity.totalVotes) * 100).toFixed(1);
+
+  const vbVotes = is2026 ? 0 : selectedCity.deputies.vitorBonfim;
+  const vbPct = is2026
+    ? "0,0"
+    : ((selectedCity.deputies.vitorBonfim / selectedCity.totalVotes) * 100).toFixed(1);
 
   return (
     <div className="w-full flex flex-col gap-6">
@@ -31,11 +54,17 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
       <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 sm:p-7 shadow-xl backdrop-blur-md relative overflow-hidden">
         <div className="flex flex-wrap items-center justify-between gap-4 pb-5 border-b border-slate-800">
           <div className="flex items-center gap-3.5">
-            <div className={`p-3 rounded-2xl ${selectedCity.isSatiroDias ? "bg-amber-500/20 text-amber-400 border border-amber-500/30" : "bg-blue-500/20 text-blue-400 border border-blue-500/30"}`}>
+            <div
+              className={`p-3 rounded-2xl ${
+                selectedCity.isSatiroDias
+                  ? "bg-amber-500/20 text-amber-400 border border-amber-500/30"
+                  : "bg-blue-500/20 text-blue-400 border border-blue-500/30"
+              }`}
+            >
               <MapPin className="w-6 h-6" />
             </div>
             <div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 flex-wrap">
                 <h2 className="text-xl sm:text-2xl font-black text-white">
                   {selectedCity.city}
                 </h2>
@@ -44,9 +73,33 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
                     Sua Localidade
                   </span>
                 )}
+                {is2026 ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                    <Clock className="w-3 h-3" />
+                    Aguardando Apuração 2026 (0,00%)
+                  </span>
+                ) : (
+                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    Eleição 2022 (Consolidada)
+                  </span>
+                )}
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Votação por município • {electionYear === "2026" ? "Base de referência eleitoral para 2026" : "Total apurado 2022"} • <strong className="text-white font-mono">{selectedCity.totalVotes.toLocaleString("pt-BR")}</strong> votos consolidados
+                {is2026 ? (
+                  <>
+                    Votação municipal • Eleições Gerais 2026 •{" "}
+                    <strong className="text-amber-400 font-mono">0</strong> votos apurados
+                    (Aguardando abertura das urnas pelo TSE)
+                  </>
+                ) : (
+                  <>
+                    Votação por município • Total apurado em 2022 •{" "}
+                    <strong className="text-white font-mono">
+                      {selectedCity.totalVotes.toLocaleString("pt-BR")}
+                    </strong>{" "}
+                    votos consolidados
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -61,20 +114,30 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
                 <Award className="w-4 h-4 text-emerald-400" />
                 Votação para Governador em {selectedCity.city}
               </span>
+              {is2026 && (
+                <span className="text-[10px] font-bold text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                  0,00% apurado
+                </span>
+              )}
             </div>
 
             {/* Candidate 1: Jerônimo */}
             <div className="flex flex-col gap-1.5 pt-2">
               <div className="flex justify-between items-center text-xs">
-                <span className="font-bold text-white">1. Jerônimo (PT)</span>
+                <div>
+                  <span className="font-bold text-white">1. Jerônimo Rodrigues (PT)</span>
+                  <span className="text-[10px] text-slate-400 block font-medium">
+                    Vice: Geraldo Júnior
+                  </span>
+                </div>
                 <span className="font-mono text-emerald-400 font-bold">
-                  {selectedCity.governor.jeronimo.toLocaleString("pt-BR")} votos ({jeronimoPct}%)
+                  {jeronimoVotes.toLocaleString("pt-BR")} votos ({jeronimoPct}%)
                 </span>
               </div>
               <div className="w-full h-3 rounded-full bg-slate-800 overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full transition-all duration-500"
-                  style={{ width: `${jeronimoPct}%` }}
+                  style={{ width: `${is2026 ? 0 : jeronimoPct}%` }}
                 />
               </div>
             </div>
@@ -82,34 +145,52 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
             {/* Candidate 2: ACM Neto */}
             <div className="flex flex-col gap-1.5 pt-2">
               <div className="flex justify-between items-center text-xs">
-                <span className="font-bold text-white">2. ACM Neto (UNIÃO)</span>
+                <div>
+                  <span className="font-bold text-white">2. ACM Neto (UNIÃO)</span>
+                  <span className="text-[10px] text-slate-400 block font-medium">
+                    Vice: {is2026 ? "Zé Cocá" : "Ana Coelho"}
+                  </span>
+                </div>
                 <span className="font-mono text-blue-400 font-bold">
-                  {selectedCity.governor.acmNeto.toLocaleString("pt-BR")} votos ({acmNetoPct}%)
+                  {acmNetoVotes.toLocaleString("pt-BR")} votos ({acmNetoPct}%)
                 </span>
               </div>
               <div className="w-full h-3 rounded-full bg-slate-800 overflow-hidden">
                 <div
                   className="h-full bg-gradient-to-r from-blue-500 to-indigo-400 rounded-full transition-all duration-500"
-                  style={{ width: `${acmNetoPct}%` }}
+                  style={{ width: `${is2026 ? 0 : acmNetoPct}%` }}
                 />
               </div>
             </div>
 
-            {/* Candidate 3: João Roma */}
-            <div className="flex flex-col gap-1.5 pt-2">
-              <div className="flex justify-between items-center text-xs">
-                <span className="font-bold text-slate-300">3. João Roma (PL)</span>
-                <span className="font-mono text-amber-400 font-bold">
-                  {selectedCity.governor.joaoRoma.toLocaleString("pt-BR")} votos ({joaoRomaPct}%)
-                </span>
+            {/* Candidate 3: João Roma - Apenas em 2022 */}
+            {!is2026 && (
+              <div className="flex flex-col gap-1.5 pt-2">
+                <div className="flex justify-between items-center text-xs">
+                  <div>
+                    <span className="font-bold text-slate-300">3. João Roma (PL)</span>
+                    <span className="text-[10px] text-slate-400 block font-medium">
+                      Vice: Leonidia Umbelina
+                    </span>
+                  </div>
+                  <span className="font-mono text-amber-400 font-bold">
+                    {joaoRomaVotes.toLocaleString("pt-BR")} votos ({joaoRomaPct}%)
+                  </span>
+                </div>
+                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                  <div
+                    className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                    style={{ width: `${joaoRomaPct}%` }}
+                  />
+                </div>
               </div>
-              <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
-                <div
-                  className="h-full bg-amber-500 rounded-full transition-all duration-500"
-                  style={{ width: `${joaoRomaPct}%` }}
-                />
-              </div>
-            </div>
+            )}
+
+            {is2026 && (
+              <p className="text-[11px] text-slate-400 mt-2 italic bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/60">
+                ⏳ As urnas de 2026 ainda não foram abertas. A contagem de votos será iniciada automaticamente no dia da votação pelo TSE.
+              </p>
+            )}
           </div>
 
           {/* Deputies in City */}
@@ -119,6 +200,11 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
                 <TrendingUp className="w-4 h-4 text-amber-400" />
                 Desempenho dos Deputados em {selectedCity.city}
               </span>
+              {is2026 && (
+                <span className="text-[10px] font-bold text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                  0,00% apurado
+                </span>
+              )}
             </div>
 
             {/* Roberto Carlos (43333) */}
@@ -136,10 +222,10 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
               </div>
               <div className="text-right">
                 <span className="font-mono font-black text-xl text-amber-400 block">
-                  {selectedCity.deputies.robertoCarlos.toLocaleString("pt-BR")}
+                  {rcVotes.toLocaleString("pt-BR")}
                 </span>
                 <span className="text-[11px] text-slate-400 font-medium">
-                  {rcPct}% dos votos
+                  {is2026 ? "Aguardando apuração" : `${rcPct}% dos votos`}
                 </span>
               </div>
             </div>
@@ -159,13 +245,19 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
               </div>
               <div className="text-right">
                 <span className="font-mono font-black text-xl text-emerald-400 block">
-                  {selectedCity.deputies.vitorBonfim.toLocaleString("pt-BR")}
+                  {vbVotes.toLocaleString("pt-BR")}
                 </span>
                 <span className="text-[11px] text-slate-400 font-medium">
-                  {vbPct}% dos votos
+                  {is2026 ? "Aguardando apuração" : `${vbPct}% dos votos`}
                 </span>
               </div>
             </div>
+
+            {is2026 && (
+              <p className="text-[11px] text-slate-400 mt-2 italic bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/60">
+                ⏳ Roberto Carlos (43333) e Vitor Bonfim (4070) registrados. Votos começarão a ser totalizados assim que as primeiras urnas forem computadas.
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -176,10 +268,12 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
           <div>
             <h3 className="text-base font-bold text-white flex items-center gap-2">
               <Building2 className="w-4 h-4 text-blue-400" />
-              Cidades da Bahia
+              Cidades da Bahia {is2026 ? "(Eleição 2026)" : "(Histórico 2022)"}
             </h3>
             <p className="text-xs text-slate-400">
-              Selecione uma cidade para carregar os votos detalhados
+              {is2026
+                ? "Selecione uma cidade baiana para acompanhar a apuração em tempo real"
+                : "Selecione uma cidade baiana para visualizar os dados oficiais consolidados de 2022"}
             </p>
           </div>
 
@@ -211,7 +305,11 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
               >
                 <div>
                   <div className="flex items-center gap-1.5">
-                    <span className={`font-bold text-xs sm:text-sm block ${isSelected ? "text-blue-300" : "text-white"}`}>
+                    <span
+                      className={`font-bold text-xs sm:text-sm block ${
+                        isSelected ? "text-blue-300" : "text-white"
+                      }`}
+                    >
                       {item.city}
                     </span>
                     {item.isSatiroDias && (
@@ -219,10 +317,16 @@ export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCiti
                     )}
                   </div>
                   <span className="text-[11px] text-slate-400 font-mono block mt-0.5">
-                    {item.totalVotes.toLocaleString("pt-BR")} votos
+                    {is2026 ? "0 votos apurados" : `${item.totalVotes.toLocaleString("pt-BR")} votos`}
                   </span>
                 </div>
-                <ChevronRight className={`w-4 h-4 transition-transform ${isSelected ? "text-blue-400 translate-x-1" : "text-slate-600 group-hover:text-slate-400"}`} />
+                <ChevronRight
+                  className={`w-4 h-4 transition-transform ${
+                    isSelected
+                      ? "text-blue-400 translate-x-1"
+                      : "text-slate-600 group-hover:text-slate-400"
+                  }`}
+                />
               </button>
             );
           })}

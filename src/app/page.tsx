@@ -344,7 +344,7 @@ export default function Home() {
     tseData.governador?.pst ||
     tseData.estadual?.pst ||
     tseData.federal?.pst ||
-    "100,00";
+    (electionYear === "2026" ? "0,00" : "100,00");
 
   const governorCandidates = tseData.governador?.candidates || [];
   const jeronimo = governorCandidates.find((c) => c.n === "13");
@@ -568,7 +568,7 @@ export default function Home() {
             {/* IF GOVERNADOR SELECTED: Top Governor Placar */}
             {selectedCargo === "governador" && (
               <div className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className={`grid grid-cols-1 ${electionYear === "2026" ? "md:grid-cols-2" : "md:grid-cols-3"} gap-4`}>
                   {/* Jerônimo */}
                   <div className="p-5 rounded-3xl bg-slate-900/80 border border-emerald-500/30 shadow-lg relative overflow-hidden">
                     <div className="flex items-center justify-between mb-3">
@@ -576,18 +576,21 @@ export default function Home() {
                         13 • PT / FE BRASIL
                       </span>
                       <span className="text-xs font-bold text-emerald-400">
-                        {jeronimo?.st || "2º Turno / Eleito"}
+                        {jeronimo?.st || (electionYear === "2026" ? "Aguardando apuração" : "2º Turno / Eleito")}
                       </span>
                     </div>
                     <h3 className="text-xl font-extrabold text-white">
                       Jerônimo Rodrigues
                     </h3>
+                    <p className="text-xs text-emerald-400/80 font-medium mt-0.5">
+                      Vice: {jeronimo?.nv || "Geraldo Júnior"}
+                    </p>
                     <div className="flex items-baseline gap-2 mt-2">
                       <span className="text-3xl font-black text-emerald-400 font-mono">
-                        {jeronimo?.vap ? Number(jeronimo.vap).toLocaleString("pt-BR") : "4.019.830"}
+                        {Number(jeronimo?.vap || 0).toLocaleString("pt-BR")}
                       </span>
                       <span className="text-sm font-bold text-slate-400">
-                        ({jeronimo?.pvap || "49,45"}%)
+                        ({jeronimo?.pvap || "0,00"}%)
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-400 mt-2">
@@ -599,21 +602,24 @@ export default function Home() {
                   <div className="p-5 rounded-3xl bg-slate-900/80 border border-blue-500/30 shadow-lg relative overflow-hidden">
                     <div className="flex items-center justify-between mb-3">
                       <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                        44 • UNIÃO
+                        44 • UNIÃO / COLIGAÇÃO
                       </span>
                       <span className="text-xs font-bold text-blue-400">
-                        {acmNeto?.st || "2º Turno"}
+                        {acmNeto?.st || (electionYear === "2026" ? "Aguardando apuração" : "2º Turno")}
                       </span>
                     </div>
                     <h3 className="text-xl font-extrabold text-white">
                       ACM Neto
                     </h3>
+                    <p className="text-xs text-blue-400/80 font-medium mt-0.5">
+                      Vice: {acmNeto?.nv || (electionYear === "2026" ? "Zé Cocá" : "Ana Coelho")}
+                    </p>
                     <div className="flex items-baseline gap-2 mt-2">
                       <span className="text-3xl font-black text-blue-400 font-mono">
-                        {acmNeto?.vap ? Number(acmNeto.vap).toLocaleString("pt-BR") : "3.316.711"}
+                        {Number(acmNeto?.vap || 0).toLocaleString("pt-BR")}
                       </span>
                       <span className="text-sm font-bold text-slate-400">
-                        ({acmNeto?.pvap || "40,80"}%)
+                        ({acmNeto?.pvap || "0,00"}%)
                       </span>
                     </div>
                     <p className="text-[11px] text-slate-400 mt-2">
@@ -621,39 +627,44 @@ export default function Home() {
                     </p>
                   </div>
 
-                  {/* João Roma */}
-                  <div className="p-5 rounded-3xl bg-slate-900/80 border border-amber-500/30 shadow-lg relative overflow-hidden">
-                    <div className="flex items-center justify-between mb-3">
-                      <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
-                        22 • PL
-                      </span>
-                      <span className="text-xs font-bold text-slate-400">
-                        {joaoRoma?.st || "Não eleito"}
-                      </span>
+                  {/* João Roma - apenas 2022 */}
+                  {electionYear === "2022" && (
+                    <div className="p-5 rounded-3xl bg-slate-900/80 border border-amber-500/30 shadow-lg relative overflow-hidden">
+                      <div className="flex items-center justify-between mb-3">
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30">
+                          22 • PL
+                        </span>
+                        <span className="text-xs font-bold text-slate-400">
+                          {joaoRoma?.st || "Não eleito"}
+                        </span>
+                      </div>
+                      <h3 className="text-xl font-extrabold text-white">
+                        João Roma
+                      </h3>
+                      <p className="text-xs text-amber-400/80 font-medium mt-0.5">
+                        Vice: {joaoRoma?.nv || "Leonidia Umbelina"}
+                      </p>
+                      <div className="flex items-baseline gap-2 mt-2">
+                        <span className="text-3xl font-black text-amber-400 font-mono">
+                          {Number(joaoRoma?.vap || 0).toLocaleString("pt-BR")}
+                        </span>
+                        <span className="text-sm font-bold text-slate-400">
+                          ({joaoRoma?.pvap || "0,00"}%)
+                        </span>
+                      </div>
+                      <p className="text-[11px] text-slate-400 mt-2">
+                        Votos válidos em todo o estado da Bahia
+                      </p>
                     </div>
-                    <h3 className="text-xl font-extrabold text-white">
-                      João Roma
-                    </h3>
-                    <div className="flex items-baseline gap-2 mt-2">
-                      <span className="text-3xl font-black text-amber-400 font-mono">
-                        {joaoRoma?.vap ? Number(joaoRoma.vap).toLocaleString("pt-BR") : "738.311"}
-                      </span>
-                      <span className="text-sm font-bold text-slate-400">
-                        ({joaoRoma?.pvap || "9,08"}%)
-                      </span>
-                    </div>
-                    <p className="text-[11px] text-slate-400 mt-2">
-                      Votos válidos em todo o estado da Bahia
-                    </p>
-                  </div>
+                  )}
                 </div>
 
                 {/* Full Ranking Table for Governor */}
                 <TseCandidateRanking
                   candidates={governorCandidates}
-                  title="Apuração Oficial para Governador da Bahia"
+                  title={`Apuração Oficial para Governador da Bahia (${electionYear})`}
                   cargoType="governador"
-                  highlightNumbers={["13", "44", "22"]}
+                  highlightNumbers={electionYear === "2026" ? ["13", "44"] : ["13", "44", "22"]}
                   secoesApuradasPct={tsePst}
                 />
               </div>
@@ -690,10 +701,10 @@ export default function Home() {
                       <div className="flex items-center gap-2 mt-1">
                         <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                           <CheckCircle className="w-3 h-3" />
-                          {robertoCarlos?.st || "Eleito por QP"}
+                          {robertoCarlos?.st || (electionYear === "2026" ? "Aguardando apuração" : "Eleito por QP")}
                         </span>
                         <span className="text-xs text-slate-400">
-                          Posição geral: #{robertoCarlos?.seq || "43"} na Bahia
+                          {electionYear === "2026" ? "Candidatura registrada" : `Posição geral: #${robertoCarlos?.seq || "43"} na Bahia`}
                         </span>
                       </div>
                     </div>
@@ -704,10 +715,10 @@ export default function Home() {
                       Total Oficial na Bahia (TSE)
                     </span>
                     <span className="text-3xl sm:text-4xl font-black text-amber-400 font-mono block">
-                      {robertoCarlos?.vap ? Number(robertoCarlos.vap).toLocaleString("pt-BR") : "57.798"}
+                      {Number(robertoCarlos?.vap || 0).toLocaleString("pt-BR")}
                     </span>
                     <span className="text-xs text-slate-400 font-medium mt-1 block">
-                      {robertoCarlos?.pvap || "0,73"}% dos votos válidos
+                      {robertoCarlos?.pvap || "0,00"}% dos votos válidos
                     </span>
                   </div>
                 </div>
@@ -715,7 +726,7 @@ export default function Home() {
                 {/* Ranking table of all state deputies */}
                 <TseCandidateRanking
                   candidates={tseData.estadual?.candidates || []}
-                  title="Ranking Geral de Deputados Estaduais da Bahia"
+                  title={`Ranking Geral de Deputados Estaduais da Bahia (${electionYear})`}
                   cargoType="estadual"
                   highlightNumbers={["43333"]}
                   secoesApuradasPct={tsePst}
@@ -754,10 +765,10 @@ export default function Home() {
                       <div className="flex items-center gap-2 mt-1">
                         <span className="inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
                           <CheckCircle className="w-3 h-3" />
-                          {vitorBonfim?.st || "Eleito por QP"}
+                          {vitorBonfim?.st || (electionYear === "2026" ? "Aguardando apuração" : "Eleito por QP")}
                         </span>
                         <span className="text-xs text-slate-400">
-                          Posição geral: #{vitorBonfim?.seq || "25"} na Bahia
+                          {electionYear === "2026" ? "Candidatura registrada" : `Posição geral: #${vitorBonfim?.seq || "25"} na Bahia`}
                         </span>
                       </div>
                     </div>
@@ -768,10 +779,10 @@ export default function Home() {
                       Total Oficial na Bahia (TSE)
                     </span>
                     <span className="text-3xl sm:text-4xl font-black text-emerald-400 font-mono block">
-                      {vitorBonfim?.vap ? Number(vitorBonfim.vap).toLocaleString("pt-BR") : "68.043"}
+                      {Number(vitorBonfim?.vap || 0).toLocaleString("pt-BR")}
                     </span>
                     <span className="text-xs text-slate-400 font-medium mt-1 block">
-                      {vitorBonfim?.pvap || "0,86"}% dos votos válidos
+                      {vitorBonfim?.pvap || "0,00"}% dos votos válidos
                     </span>
                   </div>
                 </div>
@@ -779,7 +790,7 @@ export default function Home() {
                 {/* Ranking table of all federal deputies */}
                 <TseCandidateRanking
                   candidates={tseData.federal?.candidates || []}
-                  title="Ranking Geral de Deputados Federais da Bahia"
+                  title={`Ranking Geral de Deputados Federais da Bahia (${electionYear})`}
                   cargoType="federal"
                   highlightNumbers={["4070"]}
                   secoesApuradasPct={tsePst}
@@ -794,7 +805,7 @@ export default function Home() {
         {/* ========================================================= */}
         {activeMainTab === "cidades" && (
           <div className="space-y-6">
-            <BahiaCitiesOverview />
+            <BahiaCitiesOverview electionYear={electionYear} />
           </div>
         )}
 

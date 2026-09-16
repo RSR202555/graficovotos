@@ -236,32 +236,31 @@ export const BAHIA_CITIES_DATA: CityVoteSummary[] = [
   },
 ];
 
-// Candidates for 2026 General Election in Bahia
+// Candidates for 2026 General Election in Bahia (Aguardando início da apuração das urnas de 2026)
 const CANDIDATES_2026_GOVERNOR: TseCandidate[] = [
-  { seq: "1", sqcand: "2026-gov-1", n: "13", nm: "JERÔNIMO RODRIGUES", cc: "PT / PC do B / PV / PSB / PSD / MDB", nv: "GERALDO JÚNIOR", e: "s", st: "Em apuração", dvt: "Válido", vap: "4210450", pvap: "50,15" },
-  { seq: "2", sqcand: "2026-gov-2", n: "44", nm: "ACM NETO", cc: "UNIÃO / REPUBLICANOS / PP / PSDB / CIDADANIA", nv: "ANA COELHO", e: "s", st: "Em apuração", dvt: "Válido", vap: "3480210", pvap: "41,45" },
-  { seq: "3", sqcand: "2026-gov-3", n: "22", nm: "JOÃO ROMA", cc: "PL / AGIR / PRD", nv: "LEONÍDIA UMBELINA", e: "n", st: "Em apuração", dvt: "Válido", vap: "625100", pvap: "7,45" },
-  { seq: "4", sqcand: "2026-gov-4", n: "50", nm: "KLEBER ROSA", cc: "PSOL / REDE", nv: "RONALDO MANSUR", e: "n", st: "Em apuração", dvt: "Válido", vap: "79400", pvap: "0,95" },
+  { seq: "1", sqcand: "2026-gov-1", n: "13", nm: "JERÔNIMO RODRIGUES", cc: "PT / PC do B / PV / PSB / PSD / MDB", nv: "GERALDO JÚNIOR", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
+  { seq: "2", sqcand: "2026-gov-2", n: "44", nm: "ACM NETO", cc: "UNIÃO / REPUBLICANOS / PP / PSDB / CIDADANIA", nv: "ZÉ COCÁ", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
+  { seq: "3", sqcand: "2026-gov-3", n: "50", nm: "RONALDO MANSUR", cc: "PSOL / REDE", nv: "MARCOS MENDES", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
 ];
 
 const CANDIDATES_2026_ESTADUAL: TseCandidate[] = [
-  { seq: "1", sqcand: "2026-est-rc", n: "43333", nm: "ROBERTO CARLOS", cc: "PV - Federação Brasil da Esperança (PT/PC do B/PV)", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "62410", pvap: "0,78" },
-  { seq: "2", sqcand: "2026-est-2", n: "13123", nm: "ROSEMBERG PINTO", cc: "PT", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "112340", pvap: "1,40" },
-  { seq: "3", sqcand: "2026-est-3", n: "44111", nm: "IVANILSON GOMES", cc: "UNIÃO", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "108920", pvap: "1,36" },
-  { seq: "4", sqcand: "2026-est-4", n: "55123", nm: "EDUARDO SALLES", cc: "PP", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "99410", pvap: "1,24" },
-  { seq: "5", sqcand: "2026-est-5", n: "40123", nm: "MARQUINHO VIANA", cc: "PV", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "88950", pvap: "1,11" },
-  { seq: "6", sqcand: "2026-est-6", n: "15123", nm: "LUCIA ROCHA", cc: "MDB", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "81200", pvap: "1,01" },
-  { seq: "7", sqcand: "2026-est-7", n: "10123", nm: "JURANDY OLIVEIRA", cc: "REPUBLICANOS", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "77400", pvap: "0,97" },
-  { seq: "8", sqcand: "2026-est-8", n: "22123", nm: "VITOR AZEVEDO", cc: "PL", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "73100", pvap: "0,91" },
+  { seq: "1", sqcand: "2026-est-rc", n: "43333", nm: "ROBERTO CARLOS", cc: "PV - Federação Brasil da Esperança (PT/PC do B/PV)", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
+  { seq: "2", sqcand: "2026-est-2", n: "13123", nm: "ROSEMBERG PINTO", cc: "PT", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
+  { seq: "3", sqcand: "2026-est-3", n: "44111", nm: "IVANILSON GOMES", cc: "UNIÃO", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
+  { seq: "4", sqcand: "2026-est-4", n: "55123", nm: "EDUARDO SALLES", cc: "PP", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
+  { seq: "5", sqcand: "2026-est-5", n: "40123", nm: "MARQUINHO VIANA", cc: "PV", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
+  { seq: "6", sqcand: "2026-est-6", n: "15123", nm: "LUCIA ROCHA", cc: "MDB", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
+  { seq: "7", sqcand: "2026-est-7", n: "10123", nm: "JURANDY OLIVEIRA", cc: "REPUBLICANOS", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
+  { seq: "8", sqcand: "2026-est-8", n: "22123", nm: "VITOR AZEVEDO", cc: "PL", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
 ];
 
 const CANDIDATES_2026_FEDERAL: TseCandidate[] = [
-  { seq: "1", sqcand: "2026-fed-vb", n: "4070", nm: "VITOR BONFIM", cc: "PSB", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "74890", pvap: "0,94" },
-  { seq: "2", sqcand: "2026-fed-2", n: "4422", nm: "OTTO ALENCAR FILHO", cc: "PSD", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "214500", pvap: "2,68" },
-  { seq: "3", sqcand: "2026-fed-3", n: "1122", nm: "CLAUDIO CAJADO", cc: "PP", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "159800", pvap: "2,00" },
-  { seq: "4", sqcand: "2026-fed-4", n: "1313", nm: "JORGE SOLLA", cc: "PT", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "131400", pvap: "1,64" },
-  { seq: "5", sqcand: "2026-fed-5", n: "2288", nm: "JOÃO CARLOS BACELAR", cc: "PL", e: "s", st: "Eleito por QP", dvt: "Válido", vap: "96400", pvap: "1,21" },
-  { seq: "6", sqcand: "2026-fed-6", n: "1000", nm: "ROGERIA SANTOS", cc: "REPUBLICANOS", e: "s", st: "Eleito por média", dvt: "Válido", vap: "88900", pvap: "1,11" },
+  { seq: "1", sqcand: "2026-fed-vb", n: "4070", nm: "VITOR BONFIM", cc: "PSB", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
+  { seq: "2", sqcand: "2026-fed-2", n: "4422", nm: "OTTO ALENCAR FILHO", cc: "PSD", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
+  { seq: "3", sqcand: "2026-fed-3", n: "1122", nm: "CLAUDIO CAJADO", cc: "PP", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
+  { seq: "4", sqcand: "2026-fed-4", n: "1313", nm: "JORGE SOLLA", cc: "PT", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
+  { seq: "5", sqcand: "2026-fed-5", n: "2288", nm: "JOÃO CARLOS BACELAR", cc: "PL", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
+  { seq: "6", sqcand: "2026-fed-6", n: "1000", nm: "ROGERIA SANTOS", cc: "REPUBLICANOS", e: "n", st: "Aguardando apuração", dvt: "Válido", vap: "0", pvap: "0,00" },
 ];
 
 // Helper to fetch TSE data for either 2026 or 2022
@@ -407,16 +406,16 @@ function get2026Data(cargoCode: "3" | "6" | "7"): TseElectionData {
     ano: "2026",
     cargo: cargoMap[cargoCode],
     carper: cargoCode,
-    pst: "100,00",
-    s: "34980",
+    pst: "0,00",
+    s: "0",
     st: "34980",
     e: "11450000",
-    c: "9120000",
-    pc: "79,65",
-    a: "2330000",
-    pa: "20,35",
-    tv: "9120000",
-    vnom: "8395160",
+    c: "0",
+    pc: "0,00",
+    a: "0",
+    pa: "0,00",
+    tv: "0",
+    vnom: "0",
     vl: "0",
     dg: new Date().toLocaleDateString("pt-BR"),
     hg: new Date().toLocaleTimeString("pt-BR"),

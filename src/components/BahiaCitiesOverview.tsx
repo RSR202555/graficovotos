@@ -4,7 +4,11 @@ import { useState } from "react";
 import { CityVoteSummary, BAHIA_CITIES_DATA } from "@/lib/tse";
 import { MapPin, Search, Award, TrendingUp, Building2, ChevronRight } from "lucide-react";
 
-export default function BahiaCitiesOverview() {
+interface BahiaCitiesOverviewProps {
+  electionYear?: "2026" | "2022";
+}
+
+export default function BahiaCitiesOverview({ electionYear = "2026" }: BahiaCitiesOverviewProps) {
   const [search, setSearch] = useState("");
   const [selectedCity, setSelectedCity] = useState<CityVoteSummary>(
     BAHIA_CITIES_DATA.find((c) => c.isSatiroDias) || BAHIA_CITIES_DATA[0]
@@ -42,7 +46,7 @@ export default function BahiaCitiesOverview() {
                 )}
               </div>
               <p className="text-xs text-slate-400 mt-0.5">
-                Total de votos apurados no município: <strong className="text-white font-mono">{selectedCity.totalVotes.toLocaleString("pt-BR")}</strong>
+                Votação por município • {electionYear === "2026" ? "Base de referência eleitoral para 2026" : "Total apurado 2022"} • <strong className="text-white font-mono">{selectedCity.totalVotes.toLocaleString("pt-BR")}</strong> votos consolidados
               </p>
             </div>
           </div>
